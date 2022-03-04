@@ -1,0 +1,58 @@
+"""
+Pipeline to process small non-coding RNA species from small RNA NGS using NextFlex preperation.
+
+module load cutadapt
+perlbrew switch perl-5.34.0
+
+Install MiniConda: https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
+
+conda create -c conda-forge -n Pipeline_small_ncRNA mamba
+conda activate Pipeline_small_ncRNA
+mamba install -c bioconda -c conda-forge snakemake
+
+
+snakemake --cores 1
+
+"""
+
+import os
+
+# Extract sample names from fastq
+files = os.listdir("Data/")
+sample_names = [x.rpartition(".")[0] for x in files]
+
+rule all:
+    input:
+        Final_file = "Annotated_reads_log/Done.txt"
+    
+
+rule remove_adaptors:
+    input:
+        read_1 = "Data/{sample}.fastq"
+    output:
+        read_1_cleaned = "Adaptor_removed/{sample}_cleaned.fastq"
+    shell:
+        "cutadapt -a TGGAATTCTCGGGTGCCAAGG -o {output} --minimum-length 23 {input}"
+        
+        
+rule trim_read:
+    input:
+        "Adaptor_removed/{sample}_cleaned.fastq"
+    output:
+        "Trimmed_reads/{sample}_trimmed.fastq"	
+    shell:
+        "cutadapt -u 4 -u -4 -o {output} {input}"
+
+
+rule annotate_read:
+    input:
+        samples = expand("Trimmed_reads/{sample}_trimmed.fastq", sample = sample_names),
+        dir_name = "Trimmed_reads/"
+    output:
+        "Annotated_reads_log/Done.txt"
+    log:
+        out="Annotated_reads_log/Unitas.stdout",
+        err="Annotated_reads_log/Unitas.stderr"
+    threads: 4
+    shell:
+        "perlbrew exec --with perl-5.34.0 unitas_1.7.0.pl -input {input.dir_name} -species homo_sapiens -threads {threads} > {log.out} 2> {log.err} && touch {output}"
