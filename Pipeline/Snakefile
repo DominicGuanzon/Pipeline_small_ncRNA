@@ -2,7 +2,6 @@
 Pipeline to process small non-coding RNA species from small RNA NGS using NextFlex preperation.
 
 module load cutadapt
-perlbrew switch perl-5.34.0
 
 Install MiniConda: https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
 
@@ -28,26 +27,31 @@ rule all:
 
 rule remove_adaptors:
     input:
-        read_1 = "Data/{sample}.fastq"
+        "Data/{sample}.fastq"
     output:
-        read_1_cleaned = "Adaptor_removed/{sample}_cleaned.fastq"
+        "Adaptor_removed/{sample}_cleaned.fastq"
+    log:
+        out="Adaptor_removed/Log/{sample}.stdout",
+        err="Adaptor_removed/Log/{sample}.stderr"
     shell:
-        "cutadapt -a TGGAATTCTCGGGTGCCAAGG -o {output} --minimum-length 23 {input}"
+        "cutadapt -a TGGAATTCTCGGGTGCCAAGG -o {output} --minimum-length 23 {input} > {log.out} 2> {log.err}"
         
         
 rule trim_read:
     input:
         "Adaptor_removed/{sample}_cleaned.fastq"
     output:
-        "Trimmed_reads/{sample}_trimmed.fastq"	
+        "Trimmed_reads/{sample}_trimmed.fastq"
+    log:
+        out="Trimmed_reads/Log/{sample}.stdout",
+        err="Trimmed_reads/Log/{sample}.stderr"
     shell:
-        "cutadapt -u 4 -u -4 -o {output} {input}"
+        "cutadapt -u 4 -u -4 -o {output} {input} > {log.out} 2> {log.err}"
 
 
 rule annotate_read:
     input:
-        samples = expand("Trimmed_reads/{sample}_trimmed.fastq", sample = sample_names),
-        dir_name = "Trimmed_reads/"
+        samples = expand("Trimmed_reads/{sample}_trimmed.fastq", sample = sample_names)
     output:
         "Annotated_reads_log/Done.txt"
     log:
@@ -55,4 +59,4 @@ rule annotate_read:
         err="Annotated_reads_log/Unitas.stderr"
     threads: 4
     shell:
-        "perlbrew exec --with perl-5.34.0 unitas_1.7.0.pl -input {input.dir_name} -species homo_sapiens -threads {threads} > {log.out} 2> {log.err} && touch {output}"
+        "perlbrew exec --with perl-5.34.0 unitas_1.7.0.pl -input Trimmed_reads/ -species homo_sapiens -threads {threads} > {log.out} 2> {log.err} && touch {output}"
