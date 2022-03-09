@@ -10,8 +10,9 @@ The pipeline uses trimmomatic to remove adapter sequences. The cleaned reads are
 
 ### Dependencies
 
-* trimmomatic 0.39
+* cutadapt 1.18
 * unitas_1.7.0
+* miRDeep2.0.0.7
 
 ### Installing
 

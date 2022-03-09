@@ -22,8 +22,9 @@ sample_names = [x.rpartition(".")[0] for x in files]
 
 rule all:
     input:
-        Final_file = "Annotated_reads_log/Done.txt"
-    
+        Final_file = "Annotated_reads/Log/Done_2.txt",
+        Final_file_2 = expand("expression_analyses/expression_analyses_{sample}/miRBase.mrd", sample = sample_names)
+
 
 rule remove_adaptors:
     input:
@@ -36,7 +37,8 @@ rule remove_adaptors:
     shell:
         "cutadapt -a TGGAATTCTCGGGTGCCAAGG -o {output} --minimum-length 23 {input} > {log.out} 2> {log.err}"
         
-        
+
+# Note: I have to put a condition here depending on library prep. Based on NextFlex kit.        
 rule trim_read:
     input:
         "Adaptor_removed/{sample}_cleaned.fastq"
@@ -51,12 +53,49 @@ rule trim_read:
 
 rule annotate_read:
     input:
-        samples = expand("Trimmed_reads/{sample}_trimmed.fastq", sample = sample_names)
+        expand("Trimmed_reads/{sample}_trimmed.fastq", sample = sample_names)
     output:
-        "Annotated_reads_log/Done.txt"
+        "Annotated_reads/Log/Done.txt"
     log:
-        out="Annotated_reads_log/Unitas.stdout",
-        err="Annotated_reads_log/Unitas.stderr"
+        out="Annotated_reads/Log/Unitas.stdout",
+        err="Annotated_reads/Log/Unitas.stderr"
     threads: 4
     shell:
         "perlbrew exec --with perl-5.34.0 unitas_1.7.0.pl -input Trimmed_reads/ -species homo_sapiens -threads {threads} > {log.out} 2> {log.err} && touch {output}"
+
+        
+rule move_folders:
+    input:
+        "Annotated_reads/Log/Done.txt"
+    output:
+        "Annotated_reads/Log/Done_2.txt"
+    shell:
+        "find -type d -name '*fastq_*' -exec mv -t /scratch/user/uqdguanz/Projects/Pipeline_small_ncRNA/Pipeline/Annotated_reads/ {{}} + && touch {output}"
+
+
+#Note: Update genome here to hg38.        
+rule miRDeep2_map:
+    input:
+        "Trimmed_reads/{sample}_trimmed.fastq"
+    output:
+        collapsed_fa = "miRDeep2_output/{sample}_miRDeep2_collapsed.fa",
+        alligned_arf = "miRDeep2_output/{sample}_miRDeep2_alligned.arf"
+    log:
+        out="miRDeep2_output/Log_mapped/{sample}.stdout",
+        err="miRDeep2_output/Log_mapped/{sample}.stderr"
+    shell:
+        "mapper.pl {input} -e -h -l 16 -m -p '/home/uqdguanz/Genomes/Index/hg19' -q -s {output.collapsed_fa} -t {output.alligned_arf} > {log.out} 2> {log.err}"
+
+
+rule miRDeep2_quantify:
+    input:
+        "miRDeep2_output/{sample}_miRDeep2_collapsed.fa"
+    output:
+        "expression_analyses/expression_analyses_{sample}/miRBase.mrd"
+    log:
+        out="miRDeep2_output/Log_quantified/{sample}.stdout",
+        err="miRDeep2_output/Log_quantified/{sample}.stderr"
+    shell:
+        "quantifier.pl -m '/home/uqdguanz/Genomes/miRbase_current/mature_hsa.fa' -p '/home/uqdguanz/Genomes/miRbase_current/hairpin_hsa.fa' -d -t hsa -y {wildcards.sample} -r {input} > {log.out} 2> {log.err} && touch {output}"
+        
+#Note: Next is to move miRDeep quantify files into miRDeep2 output.
