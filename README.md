@@ -1,6 +1,6 @@
 # Pipeline_small_ncRNA
 
-This is a pipeline to analyse small RNA sequencing data using Unitas.
+This is a pipeline to analyse small RNA sequencing data using Unitas and miRDeep2.
 
 ## Description
 
@@ -81,7 +81,8 @@ module load miRDeep2
 
 cd Pipeline_small_ncRNA/Pipeline/
 conda activate Pipeline_small_ncRNA
-snakemake --cores 4
+snakemake --cores 4 --set-threads annotate_read=4
+    * Threads are the number of input files analysed in parrallel by Unitas.
 ```
 
 ## Help
