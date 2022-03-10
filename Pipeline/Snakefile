@@ -1,16 +1,6 @@
 """
-Pipeline to process small non-coding RNA species from small RNA NGS using NextFlex preperation.
 
-module load cutadapt
-
-Install MiniConda: https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
-
-conda create -c conda-forge -n Pipeline_small_ncRNA mamba
-conda activate Pipeline_small_ncRNA
-mamba install -c bioconda -c conda-forge snakemake
-
-
-snakemake --cores 1
+Pipeline to process small non-coding RNA species from small RNA NGS using NextFlex library preperation.
 
 """
 
@@ -22,58 +12,63 @@ sample_names = [x.rpartition(".")[0] for x in files]
 
 rule all:
     input:
-        Final_file = "Annotated_reads/Log/Done_2.txt",
-        Final_file_2 = expand("expression_analyses/expression_analyses_{sample}/miRBase.mrd", sample = sample_names)
+        Final_file = "Unitas_annotated_reads/Log/Done_2.txt",
+        Final_file_2 = "miRDeep2_output/expression_analyses/Done.txt"
 
 
+# Remove adaptors using cutadapt
 rule remove_adaptors:
     input:
         "Data/{sample}.fastq"
     output:
         "Adaptor_removed/{sample}_cleaned.fastq"
     log:
-        out="Adaptor_removed/Log/{sample}.stdout",
-        err="Adaptor_removed/Log/{sample}.stderr"
+        out = "Adaptor_removed/Log/{sample}.stdout",
+        err = "Adaptor_removed/Log/{sample}.stderr"
     shell:
         "cutadapt -a TGGAATTCTCGGGTGCCAAGG -o {output} --minimum-length 23 {input} > {log.out} 2> {log.err}"
         
 
-# Note: I have to put a condition here depending on library prep. Based on NextFlex kit.        
+# Trim reads based on NextFlex kit.
+# Note: I have to put a condition here depending on library preperation method.
 rule trim_read:
     input:
         "Adaptor_removed/{sample}_cleaned.fastq"
     output:
         "Trimmed_reads/{sample}_trimmed.fastq"
     log:
-        out="Trimmed_reads/Log/{sample}.stdout",
-        err="Trimmed_reads/Log/{sample}.stderr"
+        out = "Trimmed_reads/Log/{sample}.stdout",
+        err = "Trimmed_reads/Log/{sample}.stderr"
     shell:
         "cutadapt -u 4 -u -4 -o {output} {input} > {log.out} 2> {log.err}"
 
 
+# Annotate reads using unitas.
 rule annotate_read:
     input:
         expand("Trimmed_reads/{sample}_trimmed.fastq", sample = sample_names)
     output:
-        "Annotated_reads/Log/Done.txt"
+        "Unitas_annotated_reads/Log/Done.txt"
     log:
-        out="Annotated_reads/Log/Unitas.stdout",
-        err="Annotated_reads/Log/Unitas.stderr"
-    threads: 4
+        out = "Unitas_annotated_reads/Log/Unitas.stdout",
+        err = "Unitas_annotated_reads/Log/Unitas.stderr"
+    threads: 1
     shell:
         "perlbrew exec --with perl-5.34.0 unitas_1.7.0.pl -input Trimmed_reads/ -species homo_sapiens -threads {threads} > {log.out} 2> {log.err} && touch {output}"
 
-        
-rule move_folders:
+
+# Move unitas generated folders into pipeline folders        
+rule move_folders_unitas:
     input:
-        "Annotated_reads/Log/Done.txt"
+        "Unitas_annotated_reads/Log/Done.txt"
     output:
-        "Annotated_reads/Log/Done_2.txt"
+        "Unitas_annotated_reads/Log/Done_2.txt"
     shell:
-        "find -type d -name '*fastq_*' -exec mv -t /scratch/user/uqdguanz/Projects/Pipeline_small_ncRNA/Pipeline/Annotated_reads/ {{}} + && touch {output}"
+        "find -maxdepth 1 -type d -name '*fastq_*' -exec mv -t Unitas_annotated_reads/ {{}} + && touch {output}"
 
 
-#Note: Update genome here to hg38.        
+# Map trimmed reads to genome using miRDeep2
+# Note: Have to use a switch here for mouse genomes.
 rule miRDeep2_map:
     input:
         "Trimmed_reads/{sample}_trimmed.fastq"
@@ -81,21 +76,30 @@ rule miRDeep2_map:
         collapsed_fa = "miRDeep2_output/{sample}_miRDeep2_collapsed.fa",
         alligned_arf = "miRDeep2_output/{sample}_miRDeep2_alligned.arf"
     log:
-        out="miRDeep2_output/Log_mapped/{sample}.stdout",
-        err="miRDeep2_output/Log_mapped/{sample}.stderr"
+        out = "miRDeep2_output/Log_mapped/{sample}.stdout",
+        err = "miRDeep2_output/Log_mapped/{sample}.stderr"
     shell:
-        "mapper.pl {input} -e -h -l 16 -m -p '/home/uqdguanz/Genomes/Index/hg19' -q -s {output.collapsed_fa} -t {output.alligned_arf} > {log.out} 2> {log.err}"
+        "mapper.pl {input} -e -h -l 16 -m -p 'Required_files/hg38/GCA_000001405.15_GRCh38_no_alt_analysis_set' -q -s {output.collapsed_fa} -t {output.alligned_arf} > {log.out} 2> {log.err}"
 
 
+# Quantify reads mapped by miRDeep2 
 rule miRDeep2_quantify:
     input:
         "miRDeep2_output/{sample}_miRDeep2_collapsed.fa"
     output:
         "expression_analyses/expression_analyses_{sample}/miRBase.mrd"
     log:
-        out="miRDeep2_output/Log_quantified/{sample}.stdout",
-        err="miRDeep2_output/Log_quantified/{sample}.stderr"
+        out = "miRDeep2_output/Log_quantified/{sample}.stdout",
+        err = "miRDeep2_output/Log_quantified/{sample}.stderr"
     shell:
-        "quantifier.pl -m '/home/uqdguanz/Genomes/miRbase_current/mature_hsa.fa' -p '/home/uqdguanz/Genomes/miRbase_current/hairpin_hsa.fa' -d -t hsa -y {wildcards.sample} -r {input} > {log.out} 2> {log.err} && touch {output}"
+        "quantifier.pl -m 'Required_files/hg38_miRBase/mature_hsa.fa' -p 'Required_files/hg38_miRBase/hairpin_hsa.fa' -d -t hsa -y {wildcards.sample} -r {input} > {log.out} 2> {log.err}"
         
-#Note: Next is to move miRDeep quantify files into miRDeep2 output.
+
+# Move miRDeep2 generated folders into pipeline folders
+rule move_folders_miRDeep2:
+    input:
+        expand("expression_analyses/expression_analyses_{sample}/miRBase.mrd", sample = sample_names)
+    output:
+        "miRDeep2_output/expression_analyses/Done.txt"
+    shell:
+        "find -maxdepth 1 \( -name '*.html' -o -name '*.csv' -o -name '*.log' -o -type d -name 'expression_analyses' \) -exec mv -t miRDeep2_output/ {{}} + && touch {output}"
