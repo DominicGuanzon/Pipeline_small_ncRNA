@@ -4,12 +4,16 @@ Pipeline to process small non-coding RNA species from small RNA NGS using NextFl
 
 """
 
-import os
+import pandas as pd
 
-# Extract sample names from fastq
-files = os.listdir("Data/")
-sample_names = [x.rpartition(".")[0] for x in files]
+# Read Sample_file.tsv and generate file names for index
+sample_sheet = pd.read_table("../Config/Sample_file.tsv")
+sample_names = [x.rpartition(".")[0] for x in sample_sheet["File_name"]]
+sample_sheet["Sample_name"] = sample_names
+sample_sheet = sample_sheet.set_index("Sample_name", drop=False)
 
+
+# Rule to specify final output files
 rule all:
     input:
         Final_file = "Unitas_annotated_reads/Log/Done_2.txt",
@@ -25,8 +29,13 @@ rule remove_adaptors:
     log:
         out = "Adaptor_removed/Log/{sample}.stdout",
         err = "Adaptor_removed/Log/{sample}.stderr"
-    shell:
-        "cutadapt -a TGGAATTCTCGGGTGCCAAGG -o {output} --minimum-length 23 {input} > {log.out} 2> {log.err}"
+    params:
+        library_type = lambda wildcards: sample_sheet.loc[wildcards.sample, "Library_type"]
+    run:
+        if params.library_type == "truseq":
+            shell("cutadapt -a TGGAATTCTCGGGTGCCAAGG -o {output} --minimum-length 15 {input} > {log.out} 2> {log.err}")
+        if params.library_type == "nextflex":
+            shell("cutadapt -a TGGAATTCTCGGGTGCCAAGG -o {output} --minimum-length 23 {input} > {log.out} 2> {log.err}")
         
 
 # Trim reads based on NextFlex kit.
@@ -39,8 +48,13 @@ rule trim_read:
     log:
         out = "Trimmed_reads/Log/{sample}.stdout",
         err = "Trimmed_reads/Log/{sample}.stderr"
-    shell:
-        "cutadapt -u 4 -u -4 -o {output} {input} > {log.out} 2> {log.err}"
+    params:
+        library_type = lambda wildcards: sample_sheet.loc[wildcards.sample, "Library_type"]
+    run:
+        if params.library_type == "truseq":
+            shell("mkdir -p Trimmed_reads/ && cp {input} {output} > {log.out} 2> {log.err}")
+        if params.library_type == "nextflex":
+            shell("cutadapt -u 4 -u -4 -o {output} {input} > {log.out} 2> {log.err}")
 
 
 # Annotate reads using unitas.

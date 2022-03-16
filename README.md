@@ -1,6 +1,7 @@
 # Pipeline_small_ncRNA
 
 This is a pipeline to analyse small RNA sequencing data using Unitas and miRDeep2.
+Only single end read supported at the moment.
 
 ## Description
 
@@ -64,6 +65,15 @@ for z in *.zip; do unzip "$z"; done
 grep -A1 "^>hsa-" mature.fa > mature_hsa.fa
 grep -A1 "^>hsa-" hairpin.fa > hairpin_hsa.fa
     * Extract only human miRNA's
+```
+
+* Add data and dodify Sample file
+```
+Move FASTQ data files to Pipeline_small_ncRNA/Pipeline/Data
+
+Open Pipeline_small_ncRNA/Config/Sample_file.tsv and modify
+    * Include FASTQ file names to be analysed in the "File_name" column.
+    * Include either "truseq" or "nextflex" libraries in the "Library_type" column.
 ```
 
 * Create conda instance
