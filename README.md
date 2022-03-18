@@ -67,7 +67,7 @@ grep -A1 "^>hsa-" hairpin.fa > hairpin_hsa.fa
     * Extract only human miRNA's
 ```
 
-* Add data and dodify Sample file
+* Add data and modify Sample file
 ```
 Move FASTQ data files to Pipeline_small_ncRNA/Pipeline/Data
 
@@ -84,7 +84,7 @@ mamba install -c bioconda -c conda-forge snakemake
 conda deactivate
 ```
 
-* Run unitas.
+* Run pipeline.
 ```
 module load cutadapt
 module load miRDeep2
