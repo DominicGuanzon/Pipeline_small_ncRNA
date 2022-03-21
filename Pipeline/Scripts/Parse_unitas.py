@@ -2,9 +2,6 @@
 
 Parse Unitas outputs to combine all samples into one file.
 
-Steps to do)
-Find file name
-
 
 """
 
@@ -12,6 +9,7 @@ import glob
 import pandas as pd
 import os
 from functools import reduce
+import matplotlib.pyplot as plt
 
 # Find paths for files needing to be parsed.
 data_path = "Unitas_annotated_reads/"
@@ -63,5 +61,11 @@ for csv in Annotation_summary_paths:
 
 df_merged = reduce(lambda  left,right: pd.merge(left,right,on=["RNA_species"], how="outer"), data)
 df_merged.to_csv("Test.csv", index = False, na_rep = "NA")
+
+data_for_graph = df_merged.filter(regex="Percentages")
+
+
+
+
 
 def do_something(data_path, out_path):
