@@ -17,7 +17,7 @@ sample_sheet = sample_sheet.set_index("Sample_name", drop=False)
 rule all:
     input:
         Final_file = "Unitas_annotated_reads/Log/Done_2.txt",
-        Final_file_2 = "miRDeep2_output/expression_analyses/Done.txt"
+        Final_file_2 = "miRDeep2_output/raw_miRNA_counts_merged_miRDeep2.csv"
 
 
 # Remove adaptors using cutadapt
@@ -117,3 +117,14 @@ rule move_folders_miRDeep2:
         "miRDeep2_output/expression_analyses/Done.txt"
     shell:
         "find -maxdepth 1 \( -name '*.html' -o -name '*.csv' -o -name '*.log' -o -type d -name 'expression_analyses' \) -exec mv -t miRDeep2_output/ {{}} + && touch {output}"
+
+        
+# Combine miRDeep2 output
+rule combine_miRDeep2_output:
+    input:
+        "miRDeep2_output/expression_analyses/Done.txt",
+        "miRDeep2_output/"        
+    output:
+        "miRDeep2_output/raw_miRNA_counts_merged_miRDeep2.csv"
+    script:
+        "Scripts/Parse_miRDeep2.py"

@@ -53,12 +53,13 @@ Follow this guide: https://docs.conda.io/projects/conda/en/latest/user-guide/ins
 
 * Download required files
 ```
-mkdir Pipeline_small_ncRNA/Pipeline/Required_files/hg38 && cd $_
+mkdir -p Pipeline_small_ncRNA/Pipeline/Required_files/hg38 && cd $_
 wget ftp://ftp.ccb.jhu.edu/pub/data/bowtie_indexes/GRCh38_no_alt.zip
     * Bowtie human hg38 index
+for z in *.zip; do unzip "$z"; done
 cd ../../../..
     
-mkdir Pipeline_small_ncRNA/Pipeline/Required_files/hg38_miRBase && cd $_
+mkdir -p Pipeline_small_ncRNA/Pipeline/Required_files/hg38_miRBase && cd $_
 wget https://www.mirbase.org/ftp/CURRENT/mature.fa.zip --no-check-certificate
 wget https://www.mirbase.org/ftp/CURRENT/hairpin.fa.zip --no-check-certificate
 for z in *.zip; do unzip "$z"; done
