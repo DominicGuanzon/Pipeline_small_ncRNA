@@ -11,9 +11,9 @@ from functools import reduce
 
 # Combined miRDeep2 csv count outputs.
 
-def parse_miRDeep2(data_path, out_path):
+def parse_miRDeep2(out_path, myparam):
     
-    miRDeep2_count_files = glob.glob(data_path + "/miRNAs_expressed_all_samples*", recursive=True)
+    miRDeep2_count_files = glob.glob(myparam + "miRNAs_expressed_all_samples*", recursive=True)
     data = []
     
     for csv in miRDeep2_count_files:
@@ -30,4 +30,4 @@ def parse_miRDeep2(data_path, out_path):
     df_merged = reduce(lambda  left,right: pd.merge(left,right,on=["miRNAs"], how="outer"), data)
     df_merged.to_csv(out_path[0], index = False, na_rep = "NA")
 
-parse_miRDeep2(snakemake.input[1], snakemake.output)
+parse_miRDeep2(snakemake.output, snakemake.config["input_dir"])

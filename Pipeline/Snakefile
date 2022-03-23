@@ -32,7 +32,7 @@ rule all:
 # Remove adaptors using cutadapt
 rule remove_adaptors:
     input:
-        "Data/{sample}.fastq"
+        lambda wildcards: "Data/" + sample_sheet.loc[wildcards.sample, "File_name"]
     output:
         "Adaptor_removed/{sample}_cleaned.fastq"
     log:
@@ -132,9 +132,10 @@ rule move_folders_miRDeep2:
 rule combine_miRDeep2_output:
     input:
         "miRDeep2_output/expression_analyses/Done.txt",
-        "miRDeep2_output/"
     output:
         "Final_outputs/raw_miRNA_counts_merged_miRDeep2.csv"
+    params:
+        input_dir = "miRDeep2_output/"
     script:
         "Scripts/Parse_miRDeep2.py"
 
@@ -143,13 +144,14 @@ rule combine_miRDeep2_output:
 rule combine_unitas_output:
     input:
         "Unitas_annotated_reads/Log/Done_2.txt",
-        "Unitas_annotated_reads/"
     output:
         "Final_outputs/Unitas_annotation_summary_combined.csv",
         "Final_outputs/Unitas_hits_per_target_combined.csv",
         "Final_outputs/Unitas_tRF_table_simplified_combined.csv",
         "Final_outputs/Unitas_tRF_table_absolute_combined.csv",
         "Final_outputs/Unitas_tRF_table_fractionated_combined.csv"
+    params:
+        input_dir = "Unitas_annotated_reads/"
     script:
         "Scripts/Parse_unitas.py"
         

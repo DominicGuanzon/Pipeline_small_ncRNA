@@ -12,14 +12,14 @@ from functools import reduce
 import matplotlib.pyplot as plt
 
 
-def parse_unitas(data_path, out_path):
+def parse_unitas(out_path, myparam):
     
     # Find paths for files needing to be parsed.
-    Annotation_summary_paths = glob.glob(data_path + "/*/unitas.annotation_summary.txt", recursive=True)
-    Hit_target_paths = glob.glob(data_path + "/*/unitas.hits_per_target.txt", recursive=True)
-    TRF_simplified_paths = glob.glob(data_path + "/*/unitas.tRF-table.simplified.txt", recursive=True)
-    TRF_table_paths = glob.glob(data_path + "/*/unitas.tRF-table.txt", recursive=True)
-    Full_annotation_paths = glob.glob(data_path + "/*/unitas.full_annotation_matrix.txt", recursive=True)
+    Annotation_summary_paths = glob.glob(myparam + "*/unitas.annotation_summary.txt", recursive=True)
+    Hit_target_paths = glob.glob(myparam + "*/unitas.hits_per_target.txt", recursive=True)
+    TRF_simplified_paths = glob.glob(myparam + "*/unitas.tRF-table.simplified.txt", recursive=True)
+    TRF_table_paths = glob.glob(myparam + "*/unitas.tRF-table.txt", recursive=True)
+    Full_annotation_paths = glob.glob(myparam + "*/unitas.full_annotation_matrix.txt", recursive=True)
     
     # Merge unitas.annotation_summary.txt output data and also calculate RNA specie percentages.
     data = []
@@ -130,4 +130,4 @@ def parse_unitas(data_path, out_path):
     temp = df_merged.filter(regex="source_tRNA|(fractionated)", axis=1)
     temp.to_csv(out_path[4], index = False, na_rep = "NA")
     
-parse_unitas(snakemake.input[1], snakemake.output)
+parse_unitas(snakemake.input[1], snakemake.config["input_dir"])
