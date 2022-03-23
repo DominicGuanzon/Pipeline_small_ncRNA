@@ -6,9 +6,8 @@ Pipeline to process small non-coding RNA species from small RNA NGS using NextFl
 
 import pandas as pd
 
-# Read Sample_file.tsv and generate file names for index
+# Read Sample_file.tsv and use sample_name for index
 sample_sheet = pd.read_table("../Config/Sample_file.tsv")
-sample_names = [x.rpartition(".")[0] for x in sample_sheet["File_name"]]
 sample_sheet["Sample_name"] = sample_names
 sample_sheet = sample_sheet.set_index("Sample_name", drop=False)
 
@@ -16,8 +15,8 @@ sample_sheet = sample_sheet.set_index("Sample_name", drop=False)
 # Rule to specify final output files
 rule all:
     input:
-        Final_file = "Unitas_annotated_reads/Log/Done_2.txt",
-        Final_file_2 = "miRDeep2_output/raw_miRNA_counts_merged_miRDeep2.csv"
+        Final_file = "Final_outputs/raw_miRNA_counts_merged_miRDeep2.csv",
+        Final_file_2 = "Final_outputs/Summary_plots.pdf"
 
 
 # Remove adaptors using cutadapt
@@ -123,8 +122,32 @@ rule move_folders_miRDeep2:
 rule combine_miRDeep2_output:
     input:
         "miRDeep2_output/expression_analyses/Done.txt",
-        "miRDeep2_output/"        
+        "miRDeep2_output/"
     output:
-        "miRDeep2_output/raw_miRNA_counts_merged_miRDeep2.csv"
+        "Final_outputs/raw_miRNA_counts_merged_miRDeep2.csv"
     script:
         "Scripts/Parse_miRDeep2.py"
+
+        
+# Combine Unitas output
+rule combine_unitas_output:
+    input:
+        "Unitas_annotated_reads/Log/Done_2.txt",
+        "Unitas_annotated_reads/"
+    output:
+        "Final_outputs/Unitas_annotation_summary_combined.csv",
+        "Final_outputs/Unitas_hits_per_target_combined.csv",
+        "Final_outputs/Unitas_tRF_table_simplified_combined.csv",
+        "Final_outputs/Unitas_tRF_table_absolute_combined.csv",
+        "Final_outputs/Unitas_tRF_table_fractionated_combined.csv"
+    script:
+        "Scripts/Parse_unitas.py"
+        
+# Combine plot summary graphs
+rule plot_summary_graphs:
+    input:
+        "Final_outputs/Unitas_annotation_summary_combined.csv",
+    output:
+        "Final_outputs/Summary_plots.pdf",
+    script:
+        "Scripts/Unitas_output_graph.R"

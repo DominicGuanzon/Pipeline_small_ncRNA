@@ -14,6 +14,8 @@ The pipeline uses cutadapt to remove adapter sequences. The cleaned reads are an
 * cutadapt 1.18
 * unitas_1.7.0
 * miRDeep2.0.0.7
+* R 4.1.1
+    * Need ggplot2 and reshape2 libraries
 
 ### Installing
 
@@ -74,6 +76,7 @@ Move FASTQ data files to Pipeline_small_ncRNA/Pipeline/Data
 
 Open Pipeline_small_ncRNA/Config/Sample_file.tsv and modify
     * Include FASTQ file names to be analysed in the "File_name" column.
+    * Include sample names corresponding to the FASTQ files. All subsequent files generated will use the sample name.
     * Include either "truseq" or "nextflex" libraries in the "Library_type" column.
 ```
 
@@ -89,6 +92,7 @@ conda deactivate
 ```
 module load cutadapt
 module load miRDeep2
+module load R/4.1.1
 
 cd Pipeline_small_ncRNA/Pipeline/
 conda activate Pipeline_small_ncRNA

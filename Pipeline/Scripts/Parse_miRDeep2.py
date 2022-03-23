@@ -9,9 +9,7 @@ import pandas as pd
 import os
 from functools import reduce
 
-# Find paths for files needing to be parsed.
-data_path = "miRDeep2_output/"
-
+# Combined miRDeep2 csv count outputs.
 
 def parse_miRDeep2(data_path, out_path):
     
@@ -30,6 +28,6 @@ def parse_miRDeep2(data_path, out_path):
         data.append(frame)
         
     df_merged = reduce(lambda  left,right: pd.merge(left,right,on=["miRNAs"], how="outer"), data)
-    df_merged.to_csv(out_path, index = False, na_rep = "NA")
+    df_merged.to_csv(out_path[0], index = False, na_rep = "NA")
 
-parse_miRDeep2(snakemake.input[1], snakemake.output[0])
+parse_miRDeep2(snakemake.input[1], snakemake.output)

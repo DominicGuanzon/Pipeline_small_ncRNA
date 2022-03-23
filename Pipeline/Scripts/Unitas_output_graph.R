@@ -1,0 +1,35 @@
+library(ggplot2)
+library(reshape2)
+
+
+# This plots a summary of the RNA species present in the samples.    
+plot_summary_graphs <- function(data_path, out_path) {
+    # Read in data
+    Input_file <- read.csv(data_path)
+
+    # Extract percentage columns and extract only rows of interest (major RNA species).
+    Percentage_data = Input_file[grep("^RNA_species|^Percentages", colnames(Input_file))]
+    rows_to_extract = !grepl(paste0("miRNA:homo_sapiens$|miRNA:other$|genomic_rRNA$|Mt_rRNA$|",
+         "^tRNA$|5'tR-halves_gtRNA$|5'tRFs_gtRNA$|3'tR-halves_gtRNA$|",
+         "3'tRFs_gtRNA$|3'CCA-tRFs_gtRNA$|tRF-1_gtRNA$|tRNA-leader_gtRNA$|",
+         "misc-tRFs_gtRNA$|5'tR-halves_mtRNA$|5'tRFs_mtRNA$|3'tR-halves_mtRNA$|",
+         "3'tRFs_mtRNA$|3'CCA-tRFs_mtRNA$|tRF-1_mtRNA$|tRNA-leader_mtRNA$|",
+         "misc-tRFs_mtRNA$|Total_counts$"), Percentage_data$RNA_species)
+    Percentage_data = Percentage_data[rows_to_extract, ]
+    Percentage_data[grep("mapped to piRNA producing loci", Percentage_data$RNA_species), "RNA_species"] = "piRNA producing loci"
+
+    #Remove whitespace
+    Percentage_data$RNA_species = trimws(Percentage_data$RNA_species, "left")
+
+    # Convert from wide to long format
+    Percentage_data_long = melt(Percentage_data, id.vars = "RNA_species")
+
+    pdf(out_path, width = 11.7, height = 8.3)
+    ggplot(Percentage_data_long, aes(x=RNA_species, y=value, fill=RNA_species)) +
+        geom_bar(width = 1, stat = "identity") + theme_bw() + 
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position="top") + 
+        labs(y = "Percentage") + facet_wrap( ~ variable)
+    dev.off()
+}
+
+plot_summary_graphs(snakemake@input[[1]], snakemake@output[[1]])
