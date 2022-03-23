@@ -5,12 +5,22 @@ Pipeline to process small non-coding RNA species from small RNA NGS using NextFl
 """
 
 import pandas as pd
+import sys
 
-# Read Sample_file.tsv and use sample_name for index
+# Read Sample_file.tsv
 sample_sheet = pd.read_table("../Config/Sample_file.tsv")
-sample_sheet["Sample_name"] = sample_names
-sample_sheet = sample_sheet.set_index("Sample_name", drop=False)
 
+# Check for duplicate sample names, terminate if true
+if sample_sheet["Sample_name"].duplicated().any() == True:
+    sys.exit("You have duplicate sample names in Sample_file.tsv")
+
+# Check for empty sample_names
+if sample_sheet["Sample_name"].isnull().any() == True:
+    sys.exit("You have empty sample names in Sample_file.tsv")
+
+# Add sample names to index
+sample_sheet = sample_sheet.set_index("Sample_name", drop=False)
+sample_names = list(sample_sheet["Sample_name"])
 
 # Rule to specify final output files
 rule all:
