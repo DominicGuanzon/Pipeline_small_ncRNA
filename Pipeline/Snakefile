@@ -155,7 +155,7 @@ rule combine_unitas_output:
     script:
         "Scripts/Parse_unitas.py"
         
-# Combine plot summary graphs
+# Plot summary graphs
 rule plot_summary_graphs:
     input:
         "Final_outputs/Unitas_annotation_summary_combined.csv",

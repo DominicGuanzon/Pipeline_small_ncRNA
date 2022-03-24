@@ -30,4 +30,4 @@ def parse_miRDeep2(out_path, myparam):
     df_merged = reduce(lambda  left,right: pd.merge(left,right,on=["miRNAs"], how="outer"), data)
     df_merged.to_csv(out_path[0], index = False, na_rep = "NA")
 
-parse_miRDeep2(snakemake.output, snakemake.config["input_dir"])
+parse_miRDeep2(snakemake.output, snakemake.params["input_dir"])

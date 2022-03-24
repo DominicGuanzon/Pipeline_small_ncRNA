@@ -16,7 +16,10 @@ plot_summary_graphs <- function(data_path, out_path) {
          "3'tRFs_mtRNA$|3'CCA-tRFs_mtRNA$|tRF-1_mtRNA$|tRNA-leader_mtRNA$|",
          "misc-tRFs_mtRNA$|Total_counts$"), Percentage_data$RNA_species)
     Percentage_data = Percentage_data[rows_to_extract, ]
+    
+    # Rename
     Percentage_data[grep("mapped to piRNA producing loci", Percentage_data$RNA_species), "RNA_species"] = "piRNA producing loci"
+    colnames(Percentage_data) = gsub("^Percentages_", "", colnames(Percentage_data))
 
     #Remove whitespace
     Percentage_data$RNA_species = trimws(Percentage_data$RNA_species, "left")
@@ -25,10 +28,15 @@ plot_summary_graphs <- function(data_path, out_path) {
     Percentage_data_long = melt(Percentage_data, id.vars = "RNA_species")
 
     pdf(out_path, width = 11.7, height = 8.3)
-    ggplot(Percentage_data_long, aes(x=RNA_species, y=value, fill=RNA_species)) +
+    print(ggplot(Percentage_data_long, aes(x=RNA_species, y=value, fill=RNA_species)) +
         geom_bar(width = 1, stat = "identity") + theme_bw() + 
         theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position="top") + 
-        labs(y = "Percentage") + facet_wrap( ~ variable)
+        labs(y = "Percentage") + facet_wrap( ~ variable))
+        
+    print(ggplot(Percentage_data_long, aes(x=variable, y=value, fill=variable)) +
+        geom_bar(width = 1, stat = "identity") + theme_bw() + 
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position="top") + 
+        labs(y = "Percentage", x = "Samples") + facet_wrap( ~ RNA_species, scales = "free_y"))
     dev.off()
 }
 
