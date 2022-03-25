@@ -25,8 +25,8 @@ sample_names = list(sample_sheet["Sample_name"])
 # Rule to specify final output files
 rule all:
     input:
-        Final_file = "Final_outputs/raw_miRNA_counts_merged_miRDeep2.csv",
-        Final_file_2 = "Final_outputs/Summary_plots.pdf"
+        Final_file = "Final_outputs/Unitas_summary_plots.pdf",
+        Final_file_2 = "Final_outputs/miRDeep2_summary_plots.pdf"
 
 
 # Remove adaptors using cutadapt
@@ -154,12 +154,23 @@ rule combine_unitas_output:
         input_dir = "Unitas_annotated_reads/"
     script:
         "Scripts/Parse_unitas.py"
+
         
-# Plot summary graphs
-rule plot_summary_graphs:
+# Plot summary graphs for unitas
+rule unitas_summary_graphs:
     input:
         "Final_outputs/Unitas_annotation_summary_combined.csv",
     output:
-        "Final_outputs/Summary_plots.pdf",
+        "Final_outputs/Unitas_summary_plots.pdf",
     script:
         "Scripts/Unitas_output_graph.R"
+
+        
+# Plot summary graphs for miRDeep2
+rule miRDeep2_summary_graphs:
+    input:
+        "Final_outputs/raw_miRNA_counts_merged_miRDeep2.csv",
+    output:
+        "Final_outputs/miRDeep2_summary_plots.pdf",
+    script:
+        "Scripts/miRDeep2_output_graph.R"
