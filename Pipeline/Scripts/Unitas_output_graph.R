@@ -38,7 +38,7 @@ plot_summary_graphs <- function(data_path, out_path) {
     print(ggplot(Total_count_data, aes(x=variable, y=value)) +
     geom_bar(width = 1, stat = "identity") + theme_bw() + 
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), plot.title = element_text(hjust = 0.5)) + 
-    labs(y = "Total counts", x = "Samples"))
+    labs(y = "Total counts after pre-processing", x = "Samples"))
     
     print(ggplot(Percentage_data_long, aes(x=RNA_species, y=value, fill=RNA_species)) +
         geom_bar(width = 1, stat = "identity") + theme_bw() + 
