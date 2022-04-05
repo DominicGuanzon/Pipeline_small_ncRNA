@@ -26,7 +26,8 @@ sample_names = list(sample_sheet["Sample_name"])
 rule all:
     input:
         Final_file = "Final_outputs/Unitas_summary_plots.pdf",
-        Final_file_2 = "Final_outputs/miRDeep2_summary_plots.pdf"
+        Final_file_2 = "Final_outputs/miRDeep2_summary_plots.pdf",
+        Final_file_3 = "Final_outputs/Read_loss_plots.pdf"
 
 
 # Remove adaptors using cutadapt
@@ -131,7 +132,7 @@ rule move_folders_miRDeep2:
 # Combine miRDeep2 output
 rule combine_miRDeep2_output:
     input:
-        "miRDeep2_output/expression_analyses/Done.txt",
+        "miRDeep2_output/expression_analyses/Done.txt"
     output:
         "Final_outputs/raw_miRNA_counts_merged_miRDeep2.csv"
     params:
@@ -159,9 +160,9 @@ rule combine_unitas_output:
 # Plot summary graphs for unitas
 rule unitas_summary_graphs:
     input:
-        "Final_outputs/Unitas_annotation_summary_combined.csv",
+        "Final_outputs/Unitas_annotation_summary_combined.csv"
     output:
-        "Final_outputs/Unitas_summary_plots.pdf",
+        "Final_outputs/Unitas_summary_plots.pdf"
     script:
         "Scripts/Unitas_output_graph.R"
 
@@ -169,8 +170,24 @@ rule unitas_summary_graphs:
 # Plot summary graphs for miRDeep2
 rule miRDeep2_summary_graphs:
     input:
-        "Final_outputs/raw_miRNA_counts_merged_miRDeep2.csv",
+        "Final_outputs/raw_miRNA_counts_merged_miRDeep2.csv"
     output:
-        "Final_outputs/miRDeep2_summary_plots.pdf",
+        "Final_outputs/miRDeep2_summary_plots.pdf"
     script:
         "Scripts/miRDeep2_output_graph.R"
+
+        
+# Plot summary graphs for miRDeep2
+rule read_loss_summary_graphs:
+    input:
+        expand("Adaptor_removed/{sample}_cleaned.fastq", sample = sample_names), 
+        expand("Trimmed_reads/{sample}_trimmed.fastq", sample = sample_names)
+    output:
+        "Final_outputs/Read_loss.csv",
+        "Final_outputs/Read_loss_plots.pdf"        
+    params:
+        input_dir_raw = "Data/",
+        input_dir_adaptor = "Adaptor_removed/",
+        input_dir_trimmed = "Trimmed_reads/"        
+    script:
+        "Scripts/Parse_and_plot_read_loss.R"
