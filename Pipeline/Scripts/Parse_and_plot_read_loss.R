@@ -1,4 +1,5 @@
 library(ggplot2)
+library(reshape2)
 
 ### To do: More intelligent way to retrieve sample names from filename ###
 calculate_number_of_reads <- function(file_list) {
@@ -46,13 +47,16 @@ parse_and_plot_read_loss <- function(data_path_raw, data_path_2_adaptor, data_pa
     # Write to file
     write.csv(Merged_dataframe_sorted, out_path[[1]])
     
+    # Convert to long format
+    Merged_dataframe_sorted_long = melt(Merged_dataframe_sorted, id.vars = "Sample_names")
+    
     # Plot graph
     pdf(out_path[[2]], width = 11.7, height = 8.3)
     
     print(ggplot(data=Merged_dataframe_sorted, aes(x=Sample_names, y=Raw_counts)) +
         geom_bar(stat="identity", position=position_dodge()) + theme_bw() +
         theme(axis.text.x = element_text(angle=90, vjust=.5, hjust=1)))
-
+        
     print(ggplot(data=Merged_dataframe_sorted, aes(x=Sample_names, y=Adaptor_removal_counts)) +
         geom_bar(stat="identity", position=position_dodge()) + theme_bw() +
         theme(axis.text.x = element_text(angle=90, vjust=.5, hjust=1)))
@@ -60,6 +64,14 @@ parse_and_plot_read_loss <- function(data_path_raw, data_path_2_adaptor, data_pa
     print(ggplot(data=Merged_dataframe_sorted, aes(x=Sample_names, y=Trimmed_removal_counts)) +
         geom_bar(stat="identity", position=position_dodge()) + theme_bw() +
         theme(axis.text.x = element_text(angle=90, vjust=.5, hjust=1)))
+        
+    print(ggplot(data=Merged_dataframe_sorted_long, aes(x=variable, y=value, fill = variable)) +
+        geom_bar(stat="identity", position=position_dodge()) + theme_bw() +
+        theme(axis.text.x = element_blank(), legend.position="top") + facet_wrap( ~ Sample_names))
+        
+    print(ggplot(data=Merged_dataframe_sorted_long, aes(x=variable, y=value, fill = variable)) +
+        geom_bar(stat="identity", position=position_dodge()) + theme_bw() +
+        theme(axis.text.x = element_blank(), legend.position="top") + facet_wrap( ~ Sample_names, scales = "free_y"))
     
     dev.off()
 

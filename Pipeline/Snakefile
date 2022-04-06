@@ -43,9 +43,9 @@ rule remove_adaptors:
         library_type = lambda wildcards: sample_sheet.loc[wildcards.sample, "Library_type"]
     run:
         if params.library_type == "truseq":
-            shell("cutadapt -a TGGAATTCTCGGGTGCCAAGG -o {output} --minimum-length 15 {input} > {log.out} 2> {log.err}")
+            shell("cutadapt -a TGGAATTCTCGGGTGCCAAGG -o {output} --minimum-length 14 {input} > {log.out} 2> {log.err}")
         if params.library_type == "nextflex":
-            shell("cutadapt -a TGGAATTCTCGGGTGCCAAGG -o {output} --minimum-length 23 {input} > {log.out} 2> {log.err}")
+            shell("cutadapt -a TGGAATTCTCGGGTGCCAAGG -o {output} --minimum-length 22 {input} > {log.out} 2> {log.err}")
         
 
 # Trim reads based on NextFlex kit.
