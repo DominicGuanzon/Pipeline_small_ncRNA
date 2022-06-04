@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# First move into directory of script
+cd $(dirname $0)
+
 cd ../Pipeline/
 
 rm -r Final_outputs/
