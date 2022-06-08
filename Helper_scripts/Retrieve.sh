@@ -7,7 +7,7 @@ cd ..
 
 # Add tar file extension to parameter and untar.
 cp "${1}.tar.gz" .
-tar xvf "`basename $1`.tar.gz"
+tar xvzf "`basename $1`.tar.gz"
 
 # Move FASTQ to data folder
 find `basename $1` -type f \( -iname "*.fastq.gz" ! -iname "Undetermined_*" \) -exec mv {} Pipeline/Data/  \;
