@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #PBS -A UQ-Health-CCR
-#PBS -l select=1:ncpus=8:intel=true:mem=40GB:vmem=40GB,walltime=6:00:00
+#PBS -l select=1:ncpus=8:intel=true:mem=45GB:vmem=45GB,walltime=24:00:00
 
 module load cutadapt
 module load miRDeep2
@@ -14,30 +14,15 @@ cd $PBS_O_WORKDIR
 
 conda activate Pipeline_small_ncRNA
 
-sh Helper_scripts/Retrieve.sh "/QRISdata/Q4967/Archive/FASTQ_data/201203_CS_Run_10_MN00796_0089_A000H3CWMW" "/QRISdata/Q4967/Archive/Analysed_data/Sample_sheets/"
+sh Helper_scripts/Retrieve.sh "/QRISdata/Q4967/Archive/FASTQ_data/221005_NS500239_0517_AH3TVYBGXL" "/QRISdata/Q4967/Archive/Analysed_data/Sample_sheets/"
 sleep 5
 
 cd Pipeline
-snakemake --cores 4 --set-threads annotate_read=4
+snakemake --cores 8 --set-threads annotate_read=8
 sleep 5
 cd ..
 
-sh Helper_scripts/Backup.sh "201203_CS_Run_10_MN00796_0089_A000H3CWMW" "/QRISdata/Q4967/Archive/Analysed_data/"
-sleep 5
-sh Helper_scripts/Cleanup.sh
-sleep 5
-
-###################
-
-sh Helper_scripts/Retrieve.sh "/QRISdata/Q4967/Archive/FASTQ_data/210113_CS_Run_11_MN00796_0091_A000H3FG7F" "/QRISdata/Q4967/Archive/Analysed_data/Sample_sheets/"
-sleep 5
-
-cd Pipeline
-snakemake --cores 4 --set-threads annotate_read=4
-sleep 5
-cd ..
-
-sh Helper_scripts/Backup.sh "210113_CS_Run_11_MN00796_0091_A000H3FG7F" "/QRISdata/Q4967/Archive/Analysed_data/"
+sh Helper_scripts/Backup.sh "221005_NS500239_0517_AH3TVYBGXL" "/QRISdata/Q4967/Archive/Analysed_data/"
 sleep 5
 sh Helper_scripts/Cleanup.sh
 sleep 5

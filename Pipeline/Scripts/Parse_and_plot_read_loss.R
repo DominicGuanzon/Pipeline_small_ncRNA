@@ -8,16 +8,24 @@ calculate_number_of_reads <- function(file_list, sample_file_input) {
     Raw_reads_counts$Counts = Raw_reads_counts$Counts / 4
     
     # Look for sample name in file name using sample sheet
-	Sample_names_var = paste0("^", sample_file_input$Sample_name, "_", collapse = "|")
-	Sample_names_var_position = grep(Sample_names_var, basename(rownames(Raw_reads_counts)))
+	Sample_names_var = paste0("^", sample_file_input$Sample_name, "_")
+	
+	Sample_names_var_position = c()
+	for (sample_var_id in Sample_names_var) {
+		Sample_names_var_position = c(Sample_names_var_position, grep(sample_var_id, basename(rownames(Raw_reads_counts))))
+	}
 	
 	# If no matches, use the file name in sample sheet and determine sample name
 	if (length(Sample_names_var_position) == 0) {
-		Sample_names_var = paste0("^", sample_file_input$File_name, "$", collapse = "|")
-		Sample_names_var_position = grep(Sample_names_var, basename(rownames(Raw_reads_counts)))
+		Sample_names_var = paste0("^", sample_file_input$File_name, "$")
+		
+		Sample_names_var_position = c()
+		for (sample_var_id in Sample_names_var) {
+			Sample_names_var_position = c(Sample_names_var_position, grep(sample_var_id, basename(rownames(Raw_reads_counts))))
+		}
 	}
 	
-	Raw_reads_counts$Sample_names = sample_file_input[Sample_names_var_position, "Sample_name"]
+	Raw_reads_counts$Sample_names = sample_file_input[order(Sample_names_var_position), "Sample_name"]
     rownames(Raw_reads_counts) = Raw_reads_counts$Sample_names
     
     return(Raw_reads_counts)

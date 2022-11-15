@@ -65,8 +65,8 @@ mkdir -p Pipeline_small_ncRNA/Pipeline/Required_files/hg38_miRBase && cd $_
 wget https://www.mirbase.org/ftp/CURRENT/mature.fa.zip --no-check-certificate
 wget https://www.mirbase.org/ftp/CURRENT/hairpin.fa.zip --no-check-certificate
 for z in *.zip; do unzip "$z"; done
-grep -A1 "^>hsa-" mature.fa > mature_hsa.fa
-grep -A1 "^>hsa-" hairpin.fa > hairpin_hsa.fa
+grep --no-group-separator -A1 "^>hsa-" mature.fa > mature_hsa.fa
+grep --no-group-separator -A1 "^>hsa-" hairpin.fa > hairpin_hsa.fa
     * Extract only human miRNA's
 ```
 

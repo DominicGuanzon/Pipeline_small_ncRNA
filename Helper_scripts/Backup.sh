@@ -5,13 +5,7 @@ cd $(dirname $0)
 
 cd ../../
 
-# Copy directory for tarring
-cp -r Pipeline_small_ncRNA/ ./$1
-rm -r $1/Pipeline/Required_files/hg38
-
 # Tar directory and move
-tar zcvf $1.tar.gz $1
-mv $1.tar.gz $2
-
-# Delete directory
-rm -rf $1
+# Note: Scratch is too small to create archive in the same directory then move to destination if lots of data.
+# Although not ideal, create the archive in the destination RDM directory.
+tar zcvf $2$1.tar.gz --exclude="Pipeline_small_ncRNA/Pipeline/Required_files/hg38" Pipeline_small_ncRNA/
