@@ -78,7 +78,7 @@ rule annotate_read:
         err = "Unitas_annotated_reads/Log/Unitas.stderr"
     threads: 1
     shell:
-        "perlbrew exec --with perl-5.34.0 unitas_1.7.0.pl -input Trimmed_reads/ -species homo_sapiens -threads {threads} > {log.out} 2> {log.err} && touch {output}"
+        "perlbrew exec --with perl-5.36.0 unitas_1.7.0.pl -input Trimmed_reads/ -species homo_sapiens -threads {threads} > {log.out} 2> {log.err} && touch {output}"
 
 
 # Move unitas generated folders into pipeline folders        

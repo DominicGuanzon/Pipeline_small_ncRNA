@@ -12,5 +12,6 @@ rm -r Trimmed_reads/
 rm -r Adaptor_removed/
 rm -r Data/
 rm -r .snakemake/
+rm -r mapper_logs/
 
 mkdir Data
