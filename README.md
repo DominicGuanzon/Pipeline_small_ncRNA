@@ -11,36 +11,36 @@ The pipeline uses cutadapt to remove adapter sequences. The cleaned reads are an
 
 ### Dependencies
 
-* R 4.2.1 - Available on Bunya HPC
-    * Need ggplot2 and reshape2 libraries
-* miniconda
-* perlbrew 0.96
-* miRDeep2.0.1.3 - Installed using miniconda
-* unitas_1.7.0
+* miniconda 23.1.0 Python 3.10.9 released February 7, 2023
+    * bioconda::snakemake=7.25.0
+    * bioconda::mirdeep2=2.0.1.2
+    * bioconda::cutadapt=4.3
+    * conda-forge::r-base=4.2.3
+    * conda-forge::r-reshape2=1.4.4
+    * conda-forge::r-ggplot2=3.4.1
+    * conda-forge::perl=5.32.1
+	* conda-forge::r-stringi=1.7.12
+    * bioconda::perl-lwp-simple=6.39
+    * bioconda::perl-archive-extract=0.88
+    * bioconda::perl-archive-zip=1.68
+    * bioconda::perl-lwp-protocol-https=6.10 
 
+* unitas_1.7.0
+    * Install any perl module requirements. For me it was:
+        * cpan LWP::Simple Archive::Extract Archive::Zip LWP::Protocol::https
+        * Unitas doesn't produce an error, but LWP::Protocol::https is required. Without this module, Unitas can't contact and download databases from server.	
 
 ### Installing
 
-Installation and dependencies are designed for running on the latest UQ HPC Bunya.
-Ensure perlbrew switch to perl-5.36.0 for installation of miRDeep2.
-
-* Install miniconda. Do not load module in Bunya, because pathing issue refering to older python packages.
+Installation of miniconda.
 ```
-Download Miniconda source (python 3.10) from: https://docs.conda.io/en/latest/miniconda.html#linux-installers
+Download miniconda source from: https://docs.conda.io/en/latest/miniconda.html#linux-installers
 wget https://repo.anaconda.com/miniconda/Miniconda3-py310_23.1.0-1-Linux-x86_64.sh
-Specify path: /home/uqdguanz/Programs/miniconda3
-Select yes for conda init
+Specify path option: /home/uqdguanz/Programs/miniconda3
+Specify conda init option: yes
 ```
 
-* Install latest version of perl on Bunya clusters using perlbrew
-```
-\curl -L https://install.perlbrew.pl | bash
-Add path to .bashrc "export PATH=$PATH:/home/uqdguanz/perl5/perlbrew/bin"
-perlbrew --notest install perl-5.36.0
-    * Produces error while testing perl installation, discussed [here](https://github.com/Perl/perl5/issues/15544). Issue seems to be resolved, but still occurs for me. Skipping testing for now.
-```
-
-* Installation of unitas on Bunya clusters
+Installation of unitas
 ```
 Download unitas source code from: https://www.smallrnagroup.uni-mainz.de/software.html
     * wget https://www.smallrnagroup.uni-mainz.de/software/unitas_1.7.0.zip
@@ -51,19 +51,25 @@ dos2unix unitas_1.7.0.pl
     * Produces error if not converted.
 Change first line of unitas_1.7.0.pl to "#!/usr/bin/env perl"
     * Required if wanting to run unitas globally.
-Add path to .bashrc "export PATH=$PATH:/home/uqdguanz/Programs/unitas"
-perlbrew switch perl-5.36.0
-unitas_1.7.0.pl
-    * Install any perl module requirements using cpan. For me it was:
-        * cpan LWP::Simple Archive::Extract Archive::Zip LWP::Protocol::https
-        * Unitas doesn't produce an error, but LWP::Protocol::https is required. Without this module, Unitas can't contact and download databases from server.		
+Add path to .bashrc "export PATH=$PATH:/home/uqdguanz/Programs/unitas"	
+```
+
+Clone Pipeline_small_ncRNA pipline from github
+```
+git clone https://github.com/DominicGuanzon/Pipeline_small_ncRNA.git
+cd Pipeline_small_ncRNA
+```
+
+Create conda enviroment to install dependencies using yaml file.
+```
+conda install -n base conda-forge::mamba
+mamba env create -n Pipeline_small_ncRNA -f Pipeline_small_ncRNA_env.yaml
+cd ..
 ```
 
 ### Executing program
 
-* Clone the pipeline from git
-
-* Download required files
+Download required files
 ```
 mkdir -p Pipeline_small_ncRNA/Pipeline/Required_files/hg38 && cd $_
 wget ftp://ftp.ccb.jhu.edu/pub/data/bowtie_indexes/GRCh38_no_alt.zip
@@ -90,31 +96,25 @@ Open Pipeline_small_ncRNA/Config/Sample_file.tsv and modify
     * Include either "truseq" or "nextflex" libraries in the "Library_type" column.
 ```
 
-* Create conda instance including installation of miRDeep2 and cutadapt (requires python version 3.10.0)
-```
-conda create -c conda-forge -n Pipeline_small_ncRNA python=3.10.0 mamba
-conda activate Pipeline_small_ncRNA
-mamba install -c bioconda -c conda-forge snakemake mirdeep2 cutadapt
-conda deactivate
-```
-
 * Run pipeline.
 ```
-module load r/4.2.1-foss-2021a
-
-# Loading the above modules, loads a lot of peripheral modules including python etc... unload these
-module unload python/3.9.5-gcccore-10.3.0 
-module unload scipy-bundle/2021.05-foss-2021a
-
 cd Pipeline_small_ncRNA/Pipeline/
 source activate Pipeline_small_ncRNA
 snakemake --cores 4 --set-threads annotate_read=4
     * Threads are the number of input files analysed in parrallel by Unitas.
 ```
 
-## Help
+## Notes
 
-* Attempted manual installation of miRDeep2 on Bunya clusters. make_html.pl fails, issue with cpan Compress::Zlib. Workaround is to install using bioconda.
+Installation of perlbrew on Bunya clusters
+```
+\curl -L https://install.perlbrew.pl | bash
+Add path to .bashrc "export PATH=$PATH:/home/uqdguanz/perl5/perlbrew/bin"
+perlbrew --notest install perl-5.36.0
+    * Produces error while testing perl installation, discussed [here](https://github.com/Perl/perl5/issues/15544). Issue seems to be resolved, but still occurs for me. Skipping testing for now.
+```
+
+Attempted manual installation of miRDeep2 on Bunya clusters. make_html.pl fails, issue with cpan Compress::Zlib. Workaround is to install using bioconda.
 ```
 Followed this guide: https://github.com/rajewsky-lab/mirdeep2
 
@@ -170,13 +170,6 @@ touch install_successful
 ## Authors
 
 Dominic Guanzon
-
-## Version History
-
-* 0.1
-    * Initial Release
-
-## License
 
 ## Acknowledgments
 

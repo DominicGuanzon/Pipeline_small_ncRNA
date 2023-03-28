@@ -1,0 +1,14 @@
+name: Pipeline_small_ncRNA
+dependencies:
+  - bioconda::snakemake=7.25.0
+  - bioconda::mirdeep2=2.0.1.2
+  - bioconda::cutadapt=4.3
+  - conda-forge::r-base=4.2.3
+  - conda-forge::r-reshape2=1.4.4
+  - conda-forge::r-ggplot2=3.4.1
+  - conda-forge::r-stringi=1.7.12
+  - conda-forge::perl=5.32.1
+  - bioconda::perl-lwp-simple=6.39
+  - bioconda::perl-archive-extract=0.88
+  - bioconda::perl-archive-zip=1.68
+  - bioconda::perl-lwp-protocol-https=6.10 

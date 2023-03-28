@@ -48,8 +48,7 @@ rule remove_adaptors:
             shell("cutadapt -a TGGAATTCTCGGGTGCCAAGG -o {output} --minimum-length 22 {input} > {log.out} 2> {log.err}")
         
 
-# Trim reads based on NextFlex kit.
-# Note: I have to put a condition here depending on library preperation method.
+# Trim reads based on library preperation kit.
 rule trim_read:
     input:
         "Adaptor_removed/{sample}_cleaned.fastq"
@@ -78,7 +77,7 @@ rule annotate_read:
         err = "Unitas_annotated_reads/Log/Unitas.stderr"
     threads: 1
     shell:
-        "perlbrew exec --with perl-5.36.0 unitas_1.7.0.pl -input Trimmed_reads/ -species homo_sapiens -threads {threads} > {log.out} 2> {log.err} && touch {output}"
+        "unitas_1.7.0.pl -input Trimmed_reads/ -species homo_sapiens -threads {threads} > {log.out} 2> {log.err} && touch {output}"
 
 
 # Move unitas generated folders into pipeline folders        
