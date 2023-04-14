@@ -12,7 +12,7 @@
 
 conda activate Pipeline_small_ncRNA 
 
-sh Helper_scripts/Retrieve.sh "/QRISdata/Q4967/Archive/FASTQ_data/210408_CS_Run_18_MN00796_0101_A000H3F2LK" "/QRISdata/Q4967/Archive/Analysed_data/Sample_sheets/"
+sh Helper_scripts/Retrieve.sh "/QRISdata/Q4967/Archive/FASTQ_data/230314_NS500239_0532_AH73T5BGXN" "/QRISdata/Q4967/Archive/Analysed_data/Sample_sheets/"
 sleep 5
 
 cd Pipeline
@@ -20,7 +20,7 @@ snakemake --cores 8 --set-threads annotate_read=8
 sleep 5
 cd ..
 
-sh Helper_scripts/Backup.sh "210408_CS_Run_18_MN00796_0101_A000H3F2LK" "/QRISdata/Q4967/Archive/Analysed_data/"
+sh Helper_scripts/Backup.sh "230314_NS500239_0532_AH73T5BGXN" "/QRISdata/Q4967/Archive/Analysed_data/"
 sleep 5
 sh Helper_scripts/Cleanup.sh
 sleep 5

@@ -1,13 +1,13 @@
-File_name	Sample_name	Library_type
-19_S7_L001_R1_001.fastq	19_S7	truseq
-13_S1_L001_R1_001.fastq	13_S1	truseq
-18_S6_L001_R1_001.fastq	18_S6	truseq
-21_S9_L001_R1_001.fastq	21_S9	truseq
-15_S3_L001_R1_001.fastq	15_S3	truseq
-16_S4_L001_R1_001.fastq	16_S4	truseq
-23_S11_L001_R1_001.fastq	23_S11	truseq
-14_S2_L001_R1_001.fastq	14_S2	truseq
-24_S12_L001_R1_001.fastq	24_S12	truseq
-20_S8_L001_R1_001.fastq	20_S8	truseq
-22_S10_L001_R1_001.fastq	22_S10	truseq
-17_S5_L001_R1_001.fastq	17_S5	truseq
+File_name	Sample_name	Library_type	Genome
+RNA8_S1_L001_R1_001.fastq	RNA8_S1	truseq	human
+RNA13_S6_L001_R1_001.fastq	RNA13_S6	truseq	human
+RNA18_S11_L001_R1_001.fastq	RNA18_S11	truseq	human
+RNA9_S2_L001_R1_001.fastq	RNA9_S2	truseq	chinese_hamster
+RNA19_S12_L001_R1_001.fastq	RNA19_S12	truseq	chinese_hamster
+RNA16_S9_L001_R1_001.fastq	RNA16_S9	nextflex	human
+RNA17_S10_L001_R1_001.fastq	RNA17_S10	truseq	human
+RNA14_S7_L001_R1_001.fastq	RNA14_S7	nextflex	chinese_hamster
+RNA12_S5_L001_R1_001.fastq	RNA12_S5	nextflex	human
+RNA15_S8_L001_R1_001.fastq	RNA15_S8	nextflex	chinese_hamster
+RNA10_S3_L001_R1_001.fastq	RNA10_S3	truseq	human
+RNA11_S4_L001_R1_001.fastq	RNA11_S4	truseq	chinese_hamster

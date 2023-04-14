@@ -6,6 +6,8 @@ Pipeline to process small non-coding RNA species from small RNA NGS using NextFl
 
 import pandas as pd
 import sys
+import subprocess
+import os
 
 # Read Sample_file.tsv
 sample_sheet = pd.read_table("../Config/Sample_file.tsv")
@@ -20,15 +22,124 @@ if sample_sheet["Sample_name"].isnull().any() == True:
 
 # Add sample names to index
 sample_sheet = sample_sheet.set_index("Sample_name", drop=False)
+
+genome_names = list(sample_sheet["Genome"])
 sample_names = list(sample_sheet["Sample_name"])
+
+# Download SeqMap excetuable for Unitas to avoid conflicts.
+# if (os.path.isfile("seqmap.exe") == False):
+    # file1 = open("SeqMap_installtion.stdout", "w")
+    # file2 = open("SeqMap_installtion.stderr", "w")
+    
+    # cmd_list = [["wget", "https://jhui2014.github.io/seqmap/download/seqmap-1.0.13-src.zip"],
+                # ["unzip", "seqmap-1.0.13-src.zip"],
+                # ["g++", "-O3", "-m64", "-o", "seqmap.exe", "./seqmap-1.0.13-src/match.cpp"],
+                # ["rm", "seqmap-1.0.13-src.zip"],
+                # ["rm", "-r", "seqmap-1.0.13-src"]]
+                
+    # for cmd_var in cmd_list:
+        # process = subprocess.run(cmd_var, 
+                     # stdout=subprocess.PIPE,
+                     # stderr=subprocess.PIPE,
+                     # universal_newlines=True)
+     
+        # file1.write(process.stdout)
+        # file2.write(process.stderr)
+    
+    # file1.close()
+    # file2.close()
+
+# Download genomes
+genome_list = list(set(sample_sheet["Genome"]))
+
+for genome_var in genome_list:
+    if genome_var == "human":
+        genome_folder = "./Required_files/GRCh38/"
+        
+        # Check if GRCh38 folder exists else download
+        if (os.path.isdir(genome_folder) == False):
+            os.makedirs(genome_folder)
+            
+            file1 = open(genome_folder + "GRCh38_installtion.stdout", "w")
+            file2 = open(genome_folder + "GRCh38_installtion.stderr", "w")
+            
+            cmd_list = [["wget", "ftp://ftp.ccb.jhu.edu/pub/data/bowtie_indexes/GRCh38_no_alt.zip"],
+                        ["unzip", "GRCh38_no_alt.zip", "-d", genome_folder],
+                        ["rm", "GRCh38_no_alt.zip"]]
+            
+            for cmd_var in cmd_list:
+                process = subprocess.run(cmd_var, 
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             universal_newlines=True)
+                
+                file1.write(process.stdout)
+                file2.write(process.stderr)
+            
+            file1.close()
+            file2.close()
+    
+    if genome_var == "pig":
+        genome_folder = "./Required_files/Sscrofa11_1/"
+        
+        #Check if Sscrofa11_1 folder exists else download
+        if (os.path.isdir(genome_folder) == False):
+            os.makedirs(genome_folder)
+            
+            file1 = open(genome_folder + "Sscrofa11_1_installtion.stdout", "w")
+            file2 = open(genome_folder + "Sscrofa11_1_installtion.stderr", "w")
+            
+            cmd_list = [["wget", "http://igenomes.illumina.com.s3-website-us-east-1.amazonaws.com/Sus_scrofa/Ensembl/Sscrofa11.1/Sus_scrofa_Ensembl_Sscrofa11.1.tar.gz"],
+                        ["tar", "-xvzf", "Sus_scrofa_Ensembl_Sscrofa11.1.tar.gz", "Sus_scrofa/Ensembl/Sscrofa11.1/Sequence/BowtieIndex"],
+                        ["mv", "./Sus_scrofa/Ensembl/Sscrofa11.1/Sequence/BowtieIndex/*.ebwt", genome_folder],
+                        ["rm", "Sus_scrofa_Ensembl_Sscrofa11.1.tar.gz"],
+                        ["rm", "-r", "Sus_scrofa"]]
+            
+            for cmd_var in cmd_list:
+                process = subprocess.run(cmd_var, 
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             universal_newlines=True)
+                
+                file1.write(process.stdout)
+                file2.write(process.stderr)
+            
+            file1.close()
+            file2.close()
+    
+    if genome_var == "chinese_hamster":
+        genome_folder = "./Required_files/chok1gshd/"
+        
+        #Check if chok1gshd folder exists else download genome and build index
+        if (os.path.isdir(genome_folder) == False):
+            os.makedirs(genome_folder)
+            
+            file1 = open(genome_folder + "chok1gshd_installtion.stdout", "w")
+            file2 = open(genome_folder + "chok1gshd_installtion.stderr", "w")
+            
+            cmd_list = [["wget", "https://ftp.ensembl.org/pub/release-109/fasta/cricetulus_griseus_chok1gshd/dna/Cricetulus_griseus_chok1gshd.CHOK1GS_HDv1.dna.toplevel.fa.gz"],
+                        ["gunzip", "Cricetulus_griseus_chok1gshd.CHOK1GS_HDv1.dna.toplevel.fa.gz"],
+                        ["bowtie-build", "--threads", "4", "Cricetulus_griseus_chok1gshd.CHOK1GS_HDv1.dna.toplevel.fa" "Required_files/chok1gshd/chok1gshd"],
+                        ["rm", "Cricetulus_griseus_chok1gshd.CHOK1GS_HDv1.dna.toplevel.fa.gz"],
+                        ["rm", "-r", "Cricetulus_griseus_chok1gshd.CHOK1GS_HDv1.dna.toplevel.fa"]]
+            
+            for cmd_var in cmd_list:
+                process = subprocess.run(cmd_var, 
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             universal_newlines=True)
+                
+                file1.write(process.stdout)
+                file2.write(process.stderr)
+            
+            file1.close()
+            file2.close()
+
 
 # Rule to specify final output files
 rule all:
     input:
-        Final_file = "Final_outputs/Unitas_summary_plots.pdf",
-        Final_file_2 = "Final_outputs/miRDeep2_summary_plots.pdf",
-        Final_file_3 = "Final_outputs/Read_loss_plots.pdf"
-
+        expand("Unitas_annotated_reads/{genome_folder}/Log/Done.txt", genome_folder = genome_list)
 
 # Remove adaptors using cutadapt
 rule remove_adaptors:
@@ -46,22 +157,22 @@ rule remove_adaptors:
             shell("cutadapt -a TGGAATTCTCGGGTGCCAAGG -o {output} --minimum-length 14 {input} > {log.out} 2> {log.err}")
         if params.library_type == "nextflex":
             shell("cutadapt -a TGGAATTCTCGGGTGCCAAGG -o {output} --minimum-length 22 {input} > {log.out} 2> {log.err}")
-        
+
 
 # Trim reads based on library preperation kit.
 rule trim_read:
     input:
         "Adaptor_removed/{sample}_cleaned.fastq"
     output:
-        "Trimmed_reads/{sample}_trimmed.fastq"
+        "Trimmed_reads/{genome_type}/{sample}_trimmed.fastq"
     log:
-        out = "Trimmed_reads/Log/{sample}.stdout",
-        err = "Trimmed_reads/Log/{sample}.stderr"
+        out = "Trimmed_reads/{genome_type}/Log/{sample}.stdout",
+        err = "Trimmed_reads/{genome_type}/Log/{sample}.stderr"
     params:
         library_type = lambda wildcards: sample_sheet.loc[wildcards.sample, "Library_type"]
     run:
         if params.library_type == "truseq":
-            shell("mkdir -p Trimmed_reads/ && cp {input} {output} > {log.out} 2> {log.err}")
+            shell("cp {input} {output} > {log.out} 2> {log.err}")
         if params.library_type == "nextflex":
             shell("cutadapt -u 4 -u -4 -o {output} {input} > {log.out} 2> {log.err}")
 
@@ -69,38 +180,34 @@ rule trim_read:
 # Annotate reads using unitas.
 rule annotate_read:
     input:
-        expand("Trimmed_reads/{sample}_trimmed.fastq", sample = sample_names)
+        expand("Trimmed_reads/{genome_type}/{sample}_trimmed.fastq", zip, genome_type = genome_names, sample = sample_names)
     output:
-        "Unitas_annotated_reads/Log/Done.txt"
+        "Unitas_annotated_reads/{genome_folder}/Log/Done.txt"
     log:
-        out = "Unitas_annotated_reads/Log/Unitas.stdout",
-        err = "Unitas_annotated_reads/Log/Unitas.stderr"
+        out = "Unitas_annotated_reads/{genome_folder}/Log/Unitas.stdout",
+        err = "Unitas_annotated_reads/{genome_folder}/Log/Unitas.stderr"
     threads: 1
-    shell:
-        "unitas_1.7.0.pl -input Trimmed_reads/ -species homo_sapiens -threads {threads} > {log.out} 2> {log.err} && touch {output}"
-
-
-# Move unitas generated folders into pipeline folders        
-rule move_folders_unitas:
-    input:
-        "Unitas_annotated_reads/Log/Done.txt"
-    output:
-        "Unitas_annotated_reads/Log/Done_2.txt"
-    shell:
-        "find -maxdepth 1 -type d -name '*fastq_*' -exec mv -t Unitas_annotated_reads/ {{}} + && touch {output}"
+    run:
+        if wildcards.genome_folder == "human":
+            shell("cd Unitas_annotated_reads/{wildcards.genome_folder} && unitas_1.7.0.pl -input ../../Trimmed_reads/{wildcards.genome_folder} -species homo_sapiens -threads {threads} > ../../{log.out} 2> ../../{log.err} && touch ../../{output}")
+        if wildcards.genome_folder == "chinese_hamster":
+            shell("cd Unitas_annotated_reads/{wildcards.genome_folder} && unitas_1.7.0.pl -input ../../Trimmed_reads/{wildcards.genome_folder} -species cricetulus_griseus_chok1gshd -threads {threads} > ../../{log.out} 2> ../../{log.err} && touch ../../{output}")
+        if wildcards.genome_folder == "pig":
+            shell("cd Unitas_annotated_reads/pig && unitas_1.7.0.pl -input ../../Trimmed_reads/pig -species sus_scrofa -threads {threads} > {log.out} 2> {log.err} && touch {output}")
+            
 
 
 # Map trimmed reads to genome using miRDeep2
 # Note: Have to use a switch here for mouse genomes.
 rule miRDeep2_map:
     input:
-        "Trimmed_reads/{sample}_trimmed.fastq"
+        "Trimmed_reads/{genome_type}/{sample}_trimmed.fastq"
     output:
-        collapsed_fa = "miRDeep2_output/{sample}_miRDeep2_collapsed.fa",
-        alligned_arf = "miRDeep2_output/{sample}_miRDeep2_alligned.arf"
+        collapsed_fa = "miRDeep2_output/{genome_type}/{sample}_miRDeep2_collapsed.fa",
+        alligned_arf = "miRDeep2_output/{genome_type}/{sample}_miRDeep2_alligned.arf"
     log:
-        out = "miRDeep2_output/Log_mapped/{sample}.stdout",
-        err = "miRDeep2_output/Log_mapped/{sample}.stderr"
+        out = "miRDeep2_output/Log_mapped/{genome_type}/{sample}.stdout",
+        err = "miRDeep2_output/Log_mapped/{genome_type}/{sample}.stderr"
     shell:
         "mapper.pl {input} -e -h -l 16 -m -p 'Required_files/hg38/GCA_000001405.15_GRCh38_no_alt_analysis_set' -q -s {output.collapsed_fa} -t {output.alligned_arf} > {log.out} 2> {log.err}"
 

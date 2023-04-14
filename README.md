@@ -86,7 +86,7 @@ grep --no-group-separator -A1 "^>hsa-" hairpin.fa > hairpin_hsa.fa
     * Extract only human miRNA's
 ```
 
-* Add data and modify Sample file
+Add data and modify Sample file
 ```
 Move FASTQ data files to Pipeline_small_ncRNA/Pipeline/Data
 
@@ -96,7 +96,7 @@ Open Pipeline_small_ncRNA/Config/Sample_file.tsv and modify
     * Include either "truseq" or "nextflex" libraries in the "Library_type" column.
 ```
 
-* Run pipeline.
+Run pipeline.
 ```
 cd Pipeline_small_ncRNA/Pipeline/
 source activate Pipeline_small_ncRNA
