@@ -32,6 +32,9 @@ def parse_unitas(out_path, myparam):
     # Read in file to sort paths based on sample layout.
     Sample_file = pd.read_table("../Config/Sample_file.tsv")
     
+    # Subset Sample_file for genomes of interest
+    Sample_file = Sample_file[Sample_file["Genome"] == os.path.basename(os.path.normpath(myparam))]
+    
     # Find paths for files needing to be parsed.
     Annotation_summary_paths = glob.glob(myparam + "*/unitas.annotation_summary.txt", recursive=True)
     Hit_target_paths = glob.glob(myparam + "*/unitas.hits_per_target.txt", recursive=True)

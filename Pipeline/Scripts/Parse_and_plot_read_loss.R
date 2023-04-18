@@ -32,22 +32,26 @@ calculate_number_of_reads <- function(file_list, sample_file_input) {
     
 }
 
-parse_and_plot_read_loss <- function(data_path_raw, data_path_2_adaptor, data_path_3_trimmed, out_path) {
+parse_and_plot_read_loss <- function(data_path_raw, genome_folder, adaptor_files, trimmed_files, out_path) {
 
     Sample_file = read.csv("../Config/Sample_file.tsv", sep = "\t")
+	
+	# Subset Sample_file for genomes of interest
+    Sample_file = Sample_file[Sample_file["Genome"] == genome_folder, ]
     
     # List raw files and calculate number of reads
-    Raw_reads = list.files(data_path_raw, pattern = ".fastq$", full.names = TRUE)
+	Raw_reads = list.files(data_path_raw, pattern = ".fastq$", full.names = TRUE)
+	Raw_reads = Raw_reads[grep(paste0(Sample_file$File_name, "$", collapse = "|"), Raw_reads)]
     Raw_reads_count = calculate_number_of_reads(Raw_reads, Sample_file)
     names(Raw_reads_count)[names(Raw_reads_count) == "Counts"] <- "Raw_counts"
     
     # List adaptor processed files and calculate number of reads
-    Reads_adaptor = list.files(data_path_2_adaptor, pattern = ".fastq$", full.names = TRUE)
+	Reads_adaptor = adaptor_files[grep(paste0(Sample_file$Sample_name, "_", collapse = "|"), adaptor_files)]
     Reads_adaptor_count = calculate_number_of_reads(Reads_adaptor, Sample_file)
     names(Reads_adaptor_count)[names(Reads_adaptor_count) == "Counts"] <- "Adaptor_removal_counts"
     
     # List adaptor trimmed processed files and calculate number of reads
-    Reads_trimmed = list.files(data_path_3_trimmed, pattern = ".fastq$", full.names = TRUE)
+	Reads_trimmed = trimmed_files[grep(paste0(Sample_file$Sample_name, "_", collapse = "|"), trimmed_files)]
     Reads_trimmed_count = calculate_number_of_reads(Reads_trimmed, Sample_file)
     names(Reads_trimmed_count)[names(Reads_trimmed_count) == "Counts"] <- "Trimmed_removal_counts"
     
@@ -60,13 +64,13 @@ parse_and_plot_read_loss <- function(data_path_raw, data_path_2_adaptor, data_pa
     Merged_dataframe_sorted$Sample_names = factor(Merged_dataframe_sorted$Sample_names, levels = Merged_dataframe_sorted$Sample_names)
     
     # Write to file
-    write.csv(Merged_dataframe_sorted, out_path[[1]])
+    write.csv(Merged_dataframe_sorted, out_path[["summary_data"]])
     
     # Convert to long format
     Merged_dataframe_sorted_long = melt(Merged_dataframe_sorted, id.vars = "Sample_names")
     
     # Plot graph
-    pdf(out_path[[2]], width = 11.7, height = 8.3)
+    pdf(out_path[["summary_plots"]], width = 11.7, height = 8.3)
     
     print(ggplot(data=Merged_dataframe_sorted, aes(x=Sample_names, y=Raw_counts)) +
         geom_bar(stat="identity", position=position_dodge()) + theme_bw() +
@@ -92,4 +96,4 @@ parse_and_plot_read_loss <- function(data_path_raw, data_path_2_adaptor, data_pa
 
 }
 
-parse_and_plot_read_loss(snakemake@params[["input_dir_raw"]], snakemake@params[["input_dir_adaptor"]], snakemake@params[["input_dir_trimmed"]], snakemake@output)
+parse_and_plot_read_loss(snakemake@params[["raw_data_folder"]], snakemake@params[["genome_folder_var"]], snakemake@input[["adaptor_data"]], snakemake@input[["trimmed_data"]], snakemake@output)

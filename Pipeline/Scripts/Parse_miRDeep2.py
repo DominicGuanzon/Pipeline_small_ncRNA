@@ -16,6 +16,9 @@ def parse_miRDeep2(out_path, myparam):
     # Read in file to sort paths based on sample layout.
     Sample_file = pd.read_table("../Config/Sample_file.tsv")
 
+    # Subset Sample_file for genomes of interest
+    Sample_file = Sample_file[Sample_file["Genome"] == os.path.basename(os.path.normpath(myparam))]
+
     # Find paths of miRDeep2 output files
     miRDeep2_count_files = glob.glob(myparam + "miRNAs_expressed_all_samples*", recursive=True)
         

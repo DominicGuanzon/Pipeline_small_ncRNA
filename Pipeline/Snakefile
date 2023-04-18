@@ -26,29 +26,6 @@ sample_sheet = sample_sheet.set_index("Sample_name", drop=False)
 genome_names = list(sample_sheet["Genome"])
 sample_names = list(sample_sheet["Sample_name"])
 
-# Download SeqMap excetuable for Unitas to avoid conflicts.
-# if (os.path.isfile("seqmap.exe") == False):
-    # file1 = open("SeqMap_installtion.stdout", "w")
-    # file2 = open("SeqMap_installtion.stderr", "w")
-    
-    # cmd_list = [["wget", "https://jhui2014.github.io/seqmap/download/seqmap-1.0.13-src.zip"],
-                # ["unzip", "seqmap-1.0.13-src.zip"],
-                # ["g++", "-O3", "-m64", "-o", "seqmap.exe", "./seqmap-1.0.13-src/match.cpp"],
-                # ["rm", "seqmap-1.0.13-src.zip"],
-                # ["rm", "-r", "seqmap-1.0.13-src"]]
-                
-    # for cmd_var in cmd_list:
-        # process = subprocess.run(cmd_var, 
-                     # stdout=subprocess.PIPE,
-                     # stderr=subprocess.PIPE,
-                     # universal_newlines=True)
-     
-        # file1.write(process.stdout)
-        # file2.write(process.stderr)
-    
-    # file1.close()
-    # file2.close()
-
 # Download genomes
 genome_list = list(set(sample_sheet["Genome"]))
 
@@ -60,8 +37,8 @@ for genome_var in genome_list:
         if (os.path.isdir(genome_folder) == False):
             os.makedirs(genome_folder)
             
-            file1 = open(genome_folder + "GRCh38_installtion.stdout", "w")
-            file2 = open(genome_folder + "GRCh38_installtion.stderr", "w")
+            file1 = open(genome_folder + "GRCh38_installation.stdout", "w")
+            file2 = open(genome_folder + "GRCh38_installation.stderr", "w")
             
             cmd_list = [["wget", "ftp://ftp.ccb.jhu.edu/pub/data/bowtie_indexes/GRCh38_no_alt.zip"],
                         ["unzip", "GRCh38_no_alt.zip", "-d", genome_folder],
@@ -86,8 +63,8 @@ for genome_var in genome_list:
         if (os.path.isdir(genome_folder) == False):
             os.makedirs(genome_folder)
             
-            file1 = open(genome_folder + "Sscrofa11_1_installtion.stdout", "w")
-            file2 = open(genome_folder + "Sscrofa11_1_installtion.stderr", "w")
+            file1 = open(genome_folder + "Sscrofa11_1_installation.stdout", "w")
+            file2 = open(genome_folder + "Sscrofa11_1_installation.stderr", "w")
             
             cmd_list = [["wget", "http://igenomes.illumina.com.s3-website-us-east-1.amazonaws.com/Sus_scrofa/Ensembl/Sscrofa11.1/Sus_scrofa_Ensembl_Sscrofa11.1.tar.gz"],
                         ["tar", "-xvzf", "Sus_scrofa_Ensembl_Sscrofa11.1.tar.gz", "Sus_scrofa/Ensembl/Sscrofa11.1/Sequence/BowtieIndex"],
@@ -114,8 +91,8 @@ for genome_var in genome_list:
         if (os.path.isdir(genome_folder) == False):
             os.makedirs(genome_folder)
             
-            file1 = open(genome_folder + "chok1gshd_installtion.stdout", "w")
-            file2 = open(genome_folder + "chok1gshd_installtion.stderr", "w")
+            file1 = open(genome_folder + "chok1gshd_installation.stdout", "w")
+            file2 = open(genome_folder + "chok1gshd_installation.stderr", "w")
             
             cmd_list = [["wget", "https://ftp.ensembl.org/pub/release-109/fasta/cricetulus_griseus_chok1gshd/dna/Cricetulus_griseus_chok1gshd.CHOK1GS_HDv1.dna.toplevel.fa.gz"],
                         ["gunzip", "Cricetulus_griseus_chok1gshd.CHOK1GS_HDv1.dna.toplevel.fa.gz"],
@@ -135,11 +112,92 @@ for genome_var in genome_list:
             file1.close()
             file2.close()
 
+# Check if miRBase reference files exist, else download.
+mature_miRNA = "./Required_files/miRBase/mature.fa"
+hairpin_miRNA = "./Required_files/miRBase/hairpin.fa"
+genome_folder = "./Required_files/miRBase/"
 
+if (os.path.isdir(genome_folder) == False):
+    os.makedirs(genome_folder)
+
+if os.path.isfile(mature_miRNA) == False:
+    file1 = open(genome_folder + "Mature_installation.stdout", "w")
+    file2 = open(genome_folder + "Mature_installation.stderr", "w")
+    
+    cmd_list = [["wget", "https://www.mirbase.org/ftp/CURRENT/mature.fa.gz"],
+                ["gunzip", "mature.fa.gz"],
+                ["mv", "mature.fa", genome_folder],
+                ["rm", "mature.fa.gz"]]
+    
+    for cmd_var in cmd_list:
+        process = subprocess.run(cmd_var, 
+                     stdout=subprocess.PIPE,
+                     stderr=subprocess.PIPE,
+                     universal_newlines=True)
+        
+        file1.write(process.stdout)
+        file2.write(process.stderr)
+    
+    file1.close()
+    file2.close()
+
+if os.path.isfile(hairpin_miRNA) == False:
+    file1 = open(genome_folder + "Hairpin_installation.stdout", "w")
+    file2 = open(genome_folder + "Hairpin_installation.stderr", "w")
+    
+    cmd_list = [["wget", "https://www.mirbase.org/ftp/CURRENT/hairpin.fa.gz"],
+                ["gunzip", "hairpin.fa.gz"],
+                ["mv", "hairpin.fa", genome_folder],
+                ["rm", "hairpin.fa.gz"]]
+    
+    for cmd_var in cmd_list:
+        process = subprocess.run(cmd_var, 
+                     stdout=subprocess.PIPE,
+                     stderr=subprocess.PIPE,
+                     universal_newlines=True)
+        
+        file1.write(process.stdout)
+        file2.write(process.stderr)
+    
+    file1.close()
+    file2.close()
+
+# Check if genomic specific miRBase database exist, else extract for mature and hairpin.
+genomes_miRBase = ["hsa", "ssc", "cgr"]
+genome_filt = ["human", "pig", "chinese_hamster"]
+genome_filt = [i for i, item in enumerate(genome_filt) if item in genome_list]
+genome_filt = [genomes_miRBase[id_var] for id_var in genome_filt] 
+
+for genome_miRBase_var in genome_filt:
+    mature_file = genome_folder + genome_miRBase_var + "_mature.fa"
+    hairpin_file = genome_folder + genome_miRBase_var + "_hairpin.fa"
+    
+    if os.path.isfile(mature_file) == False:
+        file1 = open(mature_file, "wb")
+        
+        cmd_list = ["grep --no-group-separator -A1 " + ("\"^>" + genome_miRBase_var + "-\"") + " ./Required_files/miRBase/mature.fa"]
+        process = subprocess.run(cmd_list, shell=True, capture_output=True)
+        
+        file1.write(process.stdout)
+        file1.close()
+        
+    if os.path.isfile(hairpin_file) == False:
+        file1 = open(hairpin_file, "wb")
+        
+        cmd_list = ["grep --no-group-separator -A1 " + ("\"^>" + genome_miRBase_var + "-\"") + " ./Required_files/miRBase/hairpin.fa"]
+        process = subprocess.run(cmd_list, shell=True, capture_output=True)
+        
+        file1.write(process.stdout)
+        file1.close()
+
+            
 # Rule to specify final output files
 rule all:
     input:
-        expand("Unitas_annotated_reads/{genome_folder}/Log/Done.txt", genome_folder = genome_list)
+        miRDeep2_plots = expand("Final_outputs/{genome_folder}/miRDeep2_summary_plots.pdf", genome_folder = genome_list),
+        unitas_plots = expand("Final_outputs/{genome_folder}/Unitas_summary_plots.pdf", genome_folder = genome_list),
+        read_loss_plots = expand("Final_outputs/{genome_folder}/Read_loss_plots.pdf", genome_folder = genome_list)
+
 
 # Remove adaptors using cutadapt
 rule remove_adaptors:
@@ -193,12 +251,10 @@ rule annotate_read:
         if wildcards.genome_folder == "chinese_hamster":
             shell("cd Unitas_annotated_reads/{wildcards.genome_folder} && unitas_1.7.0.pl -input ../../Trimmed_reads/{wildcards.genome_folder} -species cricetulus_griseus_chok1gshd -threads {threads} > ../../{log.out} 2> ../../{log.err} && touch ../../{output}")
         if wildcards.genome_folder == "pig":
-            shell("cd Unitas_annotated_reads/pig && unitas_1.7.0.pl -input ../../Trimmed_reads/pig -species sus_scrofa -threads {threads} > {log.out} 2> {log.err} && touch {output}")
-            
+            shell("cd Unitas_annotated_reads/{wildcards.genome_folder} && unitas_1.7.0.pl -input ../../Trimmed_reads/{wildcards.genome_folder} -species sus_scrofa -threads {threads} > ../../{log.out} 2> ../../{log.err} && touch ../../{output}")      
 
 
 # Map trimmed reads to genome using miRDeep2
-# Note: Have to use a switch here for mouse genomes.
 rule miRDeep2_map:
     input:
         "Trimmed_reads/{genome_type}/{sample}_trimmed.fastq"
@@ -206,43 +262,44 @@ rule miRDeep2_map:
         collapsed_fa = "miRDeep2_output/{genome_type}/{sample}_miRDeep2_collapsed.fa",
         alligned_arf = "miRDeep2_output/{genome_type}/{sample}_miRDeep2_alligned.arf"
     log:
-        out = "miRDeep2_output/Log_mapped/{genome_type}/{sample}.stdout",
-        err = "miRDeep2_output/Log_mapped/{genome_type}/{sample}.stderr"
-    shell:
-        "mapper.pl {input} -e -h -l 16 -m -p 'Required_files/hg38/GCA_000001405.15_GRCh38_no_alt_analysis_set' -q -s {output.collapsed_fa} -t {output.alligned_arf} > {log.out} 2> {log.err}"
+        out = "miRDeep2_output/{genome_type}/Log_mapped/{sample}.stdout",
+        err = "miRDeep2_output/{genome_type}/Log_mapped/{sample}.stderr"
+    run:
+        if wildcards.genome_type == "human":
+            shell("cd miRDeep2_output/{wildcards.genome_type} && mapper.pl ../../{input} -e -h -l 16 -m -p '../../Required_files/GRCh38/GCA_000001405.15_GRCh38_no_alt_analysis_set' -q -s ../../{output.collapsed_fa} -t ../../{output.alligned_arf} > ../../{log.out} 2> ../../{log.err}")
+        if wildcards.genome_type == "chinese_hamster":
+            shell("cd miRDeep2_output/{wildcards.genome_type} && mapper.pl ../../{input} -e -h -l 16 -m -p '../../Required_files/chok1gshd/chok1gshd' -q -s ../../{output.collapsed_fa} -t ../../{output.alligned_arf} > ../../{log.out} 2> ../../{log.err}")
+        if wildcards.genome_type == "pig":
+            shell("cd miRDeep2_output/{wildcards.genome_type} && mapper.pl ../../{input} -e -h -l 16 -m -p '../../Required_files/Sscrofa11_1/genome' -q -s ../../{output.collapsed_fa} -t ../../{output.alligned_arf} > ../../{log.out} 2> ../../{log.err}")
 
 
 # Quantify reads mapped by miRDeep2 
 rule miRDeep2_quantify:
     input:
-        "miRDeep2_output/{sample}_miRDeep2_collapsed.fa"
+        collapsed_fa = "miRDeep2_output/{genome_type}/{sample}_miRDeep2_collapsed.fa",
+        alligned_arf = "miRDeep2_output/{genome_type}/{sample}_miRDeep2_alligned.arf"
     output:
-        "expression_analyses/expression_analyses_{sample}/miRBase.mrd"
+        "miRDeep2_output/{genome_type}/expression_analyses/expression_analyses_{sample}/miRBase.mrd"
     log:
-        out = "miRDeep2_output/Log_quantified/{sample}.stdout",
-        err = "miRDeep2_output/Log_quantified/{sample}.stderr"
-    shell:
-        "quantifier.pl -m 'Required_files/hg38_miRBase/mature_hsa.fa' -p 'Required_files/hg38_miRBase/hairpin_hsa.fa' -d -t hsa -y {wildcards.sample} -r {input} > {log.out} 2> {log.err}"
-        
-
-# Move miRDeep2 generated folders into pipeline folders
-rule move_folders_miRDeep2:
-    input:
-        expand("expression_analyses/expression_analyses_{sample}/miRBase.mrd", sample = sample_names)
-    output:
-        "miRDeep2_output/expression_analyses/Done.txt"
-    shell:
-        "find -maxdepth 1 \( -name '*.html' -o -name '*.csv' -o -name '*.log' -o -type d -name 'expression_analyses' \) -exec mv -t miRDeep2_output/ {{}} + && touch {output}"
+        out = "miRDeep2_output/{genome_type}/Log_quantified/{sample}.stdout",
+        err = "miRDeep2_output/{genome_type}/Log_quantified/{sample}.stderr"
+    run:
+        if wildcards.genome_type == "human":
+            shell("cd miRDeep2_output/{wildcards.genome_type} && quantifier.pl -m '../../Required_files/miRBase/hsa_mature.fa' -p '../../Required_files/miRBase/hsa_hairpin.fa' -d -y {wildcards.sample} -r ../../{input.collapsed_fa} > ../../{log.out} 2> ../../{log.err}")
+        if wildcards.genome_type == "chinese_hamster":
+            shell("cd miRDeep2_output/{wildcards.genome_type} && quantifier.pl -m '../../Required_files/miRBase/cgr_mature.fa' -p '../../Required_files/miRBase/cgr_hairpin.fa' -d -y {wildcards.sample} -r ../../{input.collapsed_fa} > ../../{log.out} 2> ../../{log.err}")
+        if wildcards.genome_type == "pig":
+            shell("cd miRDeep2_output/{wildcards.genome_type} && quantifier.pl -m '../../Required_files/miRBase/ssc_mature.fa' -p '../../Required_files/miRBase/ssc_hairpin.fa' -d -y {wildcards.sample} -r ../../{input.collapsed_fa} > ../../{log.out} 2> ../../{log.err}")
 
         
 # Combine miRDeep2 output
 rule combine_miRDeep2_output:
     input:
-        "miRDeep2_output/expression_analyses/Done.txt"
+        expand("miRDeep2_output/{genome_type}/expression_analyses/expression_analyses_{sample}/miRBase.mrd", zip, genome_type = genome_names, sample = sample_names)
     output:
-        "Final_outputs/raw_miRNA_counts_merged_miRDeep2.csv"
+        "Final_outputs/{genome_folder}/raw_miRNA_counts_merged_miRDeep2.csv"
     params:
-        input_dir = "miRDeep2_output/"
+        input_dir = "miRDeep2_output/{genome_folder}/"
     script:
         "Scripts/Parse_miRDeep2.py"
 
@@ -250,15 +307,15 @@ rule combine_miRDeep2_output:
 # Combine Unitas output
 rule combine_unitas_output:
     input:
-        "Unitas_annotated_reads/Log/Done_2.txt",
+        "Unitas_annotated_reads/{genome_folder}/Log/Done.txt"
     output:
-        "Final_outputs/Unitas_annotation_summary_combined.csv",
-        "Final_outputs/Unitas_hits_per_target_combined.csv",
-        "Final_outputs/Unitas_tRF_table_simplified_combined.csv",
-        "Final_outputs/Unitas_tRF_table_absolute_combined.csv",
-        "Final_outputs/Unitas_tRF_table_fractionated_combined.csv"
+        "Final_outputs/{genome_folder}/Unitas_annotation_summary_combined.csv",
+        "Final_outputs/{genome_folder}/Unitas_hits_per_target_combined.csv",
+        "Final_outputs/{genome_folder}/Unitas_tRF_table_simplified_combined.csv",
+        "Final_outputs/{genome_folder}/Unitas_tRF_table_absolute_combined.csv",
+        "Final_outputs/{genome_folder}/Unitas_tRF_table_fractionated_combined.csv"
     params:
-        input_dir = "Unitas_annotated_reads/"
+        input_dir = "Unitas_annotated_reads/{genome_folder}/"
     script:
         "Scripts/Parse_unitas.py"
 
@@ -266,9 +323,9 @@ rule combine_unitas_output:
 # Plot summary graphs for unitas
 rule unitas_summary_graphs:
     input:
-        "Final_outputs/Unitas_annotation_summary_combined.csv"
+        "Final_outputs/{genome_folder}/Unitas_annotation_summary_combined.csv"
     output:
-        "Final_outputs/Unitas_summary_plots.pdf"
+        "Final_outputs/{genome_folder}/Unitas_summary_plots.pdf"
     script:
         "Scripts/Unitas_output_graph.R"
 
@@ -276,9 +333,9 @@ rule unitas_summary_graphs:
 # Plot summary graphs for miRDeep2
 rule miRDeep2_summary_graphs:
     input:
-        "Final_outputs/raw_miRNA_counts_merged_miRDeep2.csv"
+        "Final_outputs/{genome_folder}/raw_miRNA_counts_merged_miRDeep2.csv"
     output:
-        "Final_outputs/miRDeep2_summary_plots.pdf"
+        "Final_outputs/{genome_folder}/miRDeep2_summary_plots.pdf"
     script:
         "Scripts/miRDeep2_output_graph.R"
 
@@ -286,14 +343,13 @@ rule miRDeep2_summary_graphs:
 # Plot summary graphs for miRDeep2
 rule read_loss_summary_graphs:
     input:
-        expand("Adaptor_removed/{sample}_cleaned.fastq", sample = sample_names), 
-        expand("Trimmed_reads/{sample}_trimmed.fastq", sample = sample_names)
+        adaptor_data = expand("Adaptor_removed/{sample}_cleaned.fastq", sample = sample_names),
+        trimmed_data = expand("Trimmed_reads/{genome_type}/{sample}_trimmed.fastq", zip, genome_type = genome_names, sample = sample_names)
     output:
-        "Final_outputs/Read_loss.csv",
-        "Final_outputs/Read_loss_plots.pdf"        
+        summary_data = "Final_outputs/{genome_folder}/Read_loss.csv",
+        summary_plots = "Final_outputs/{genome_folder}/Read_loss_plots.pdf"
     params:
-        input_dir_raw = "Data/",
-        input_dir_adaptor = "Adaptor_removed/",
-        input_dir_trimmed = "Trimmed_reads/"        
+        raw_data_folder = "Data/",
+        genome_folder_var = "{genome_folder}"
     script:
         "Scripts/Parse_and_plot_read_loss.R"
