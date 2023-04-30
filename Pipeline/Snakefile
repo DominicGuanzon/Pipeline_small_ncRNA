@@ -6,8 +6,6 @@ Pipeline to process small non-coding RNA species from small RNA NGS using NextFl
 
 import pandas as pd
 import sys
-import subprocess
-import os
 
 # Read Sample_file.tsv
 sample_sheet = pd.read_table("../Config/Sample_file.tsv")
@@ -25,172 +23,24 @@ sample_sheet = sample_sheet.set_index("Sample_name", drop=False)
 
 genome_names = list(sample_sheet["Genome"])
 sample_names = list(sample_sheet["Sample_name"])
-
-# Download genomes
 genome_list = list(set(sample_sheet["Genome"]))
+
+# Create bowtie and miRBase names
+bowtie_names = []
+miRBase_names = []
 
 for genome_var in genome_list:
     if genome_var == "human":
-        genome_folder = "./Required_files/GRCh38/"
+        bowtie_names.append("GCA_000001405.15_GRCh38_no_alt_analysis_set")
+        miRBase_names.append("hsa")
+    elif genome_var == "pig":
+        bowtie_names.append("genome")
+        miRBase_names.append("ssc")
+    elif genome_var == "chinese_hamster":
+        bowtie_names.append("chok1gshd")
+        miRBase_names.append("cgr")
         
-        # Check if GRCh38 folder exists else download
-        if (os.path.isdir(genome_folder) == False):
-            os.makedirs(genome_folder)
-            
-            file1 = open(genome_folder + "GRCh38_installation.stdout", "w")
-            file2 = open(genome_folder + "GRCh38_installation.stderr", "w")
-            
-            cmd_list = [["wget", "ftp://ftp.ccb.jhu.edu/pub/data/bowtie_indexes/GRCh38_no_alt.zip"],
-                        ["unzip", "GRCh38_no_alt.zip", "-d", genome_folder],
-                        ["rm", "GRCh38_no_alt.zip"]]
-            
-            for cmd_var in cmd_list:
-                process = subprocess.run(cmd_var, 
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE,
-                             universal_newlines=True)
-                
-                file1.write(process.stdout)
-                file2.write(process.stderr)
-            
-            file1.close()
-            file2.close()
-    
-    if genome_var == "pig":
-        genome_folder = "./Required_files/Sscrofa11_1/"
-        
-        #Check if Sscrofa11_1 folder exists else download
-        if (os.path.isdir(genome_folder) == False):
-            os.makedirs(genome_folder)
-            
-            file1 = open(genome_folder + "Sscrofa11_1_installation.stdout", "w")
-            file2 = open(genome_folder + "Sscrofa11_1_installation.stderr", "w")
-            
-            cmd_list = [["wget", "http://igenomes.illumina.com.s3-website-us-east-1.amazonaws.com/Sus_scrofa/Ensembl/Sscrofa11.1/Sus_scrofa_Ensembl_Sscrofa11.1.tar.gz"],
-                        ["tar", "-xvzf", "Sus_scrofa_Ensembl_Sscrofa11.1.tar.gz", "Sus_scrofa/Ensembl/Sscrofa11.1/Sequence/BowtieIndex"],
-                        ["mv", "./Sus_scrofa/Ensembl/Sscrofa11.1/Sequence/BowtieIndex/*.ebwt", genome_folder],
-                        ["rm", "Sus_scrofa_Ensembl_Sscrofa11.1.tar.gz"],
-                        ["rm", "-r", "Sus_scrofa"]]
-            
-            for cmd_var in cmd_list:
-                process = subprocess.run(cmd_var, 
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE,
-                             universal_newlines=True)
-                
-                file1.write(process.stdout)
-                file2.write(process.stderr)
-            
-            file1.close()
-            file2.close()
-    
-    if genome_var == "chinese_hamster":
-        genome_folder = "./Required_files/chok1gshd/"
-        
-        #Check if chok1gshd folder exists else download genome and build index
-        if (os.path.isdir(genome_folder) == False):
-            os.makedirs(genome_folder)
-            
-            file1 = open(genome_folder + "chok1gshd_installation.stdout", "w")
-            file2 = open(genome_folder + "chok1gshd_installation.stderr", "w")
-            
-            cmd_list = [["wget", "https://ftp.ensembl.org/pub/release-109/fasta/cricetulus_griseus_chok1gshd/dna/Cricetulus_griseus_chok1gshd.CHOK1GS_HDv1.dna.toplevel.fa.gz"],
-                        ["gunzip", "Cricetulus_griseus_chok1gshd.CHOK1GS_HDv1.dna.toplevel.fa.gz"],
-                        ["bowtie-build", "--threads", "4", "Cricetulus_griseus_chok1gshd.CHOK1GS_HDv1.dna.toplevel.fa" "Required_files/chok1gshd/chok1gshd"],
-                        ["rm", "Cricetulus_griseus_chok1gshd.CHOK1GS_HDv1.dna.toplevel.fa.gz"],
-                        ["rm", "-r", "Cricetulus_griseus_chok1gshd.CHOK1GS_HDv1.dna.toplevel.fa"]]
-            
-            for cmd_var in cmd_list:
-                process = subprocess.run(cmd_var, 
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE,
-                             universal_newlines=True)
-                
-                file1.write(process.stdout)
-                file2.write(process.stderr)
-            
-            file1.close()
-            file2.close()
 
-# Check if miRBase reference files exist, else download.
-mature_miRNA = "./Required_files/miRBase/mature.fa"
-hairpin_miRNA = "./Required_files/miRBase/hairpin.fa"
-genome_folder = "./Required_files/miRBase/"
-
-if (os.path.isdir(genome_folder) == False):
-    os.makedirs(genome_folder)
-
-if os.path.isfile(mature_miRNA) == False:
-    file1 = open(genome_folder + "Mature_installation.stdout", "w")
-    file2 = open(genome_folder + "Mature_installation.stderr", "w")
-    
-    cmd_list = [["wget", "https://www.mirbase.org/ftp/CURRENT/mature.fa.gz"],
-                ["gunzip", "mature.fa.gz"],
-                ["mv", "mature.fa", genome_folder],
-                ["rm", "mature.fa.gz"]]
-    
-    for cmd_var in cmd_list:
-        process = subprocess.run(cmd_var, 
-                     stdout=subprocess.PIPE,
-                     stderr=subprocess.PIPE,
-                     universal_newlines=True)
-        
-        file1.write(process.stdout)
-        file2.write(process.stderr)
-    
-    file1.close()
-    file2.close()
-
-if os.path.isfile(hairpin_miRNA) == False:
-    file1 = open(genome_folder + "Hairpin_installation.stdout", "w")
-    file2 = open(genome_folder + "Hairpin_installation.stderr", "w")
-    
-    cmd_list = [["wget", "https://www.mirbase.org/ftp/CURRENT/hairpin.fa.gz"],
-                ["gunzip", "hairpin.fa.gz"],
-                ["mv", "hairpin.fa", genome_folder],
-                ["rm", "hairpin.fa.gz"]]
-    
-    for cmd_var in cmd_list:
-        process = subprocess.run(cmd_var, 
-                     stdout=subprocess.PIPE,
-                     stderr=subprocess.PIPE,
-                     universal_newlines=True)
-        
-        file1.write(process.stdout)
-        file2.write(process.stderr)
-    
-    file1.close()
-    file2.close()
-
-# Check if genomic specific miRBase database exist, else extract for mature and hairpin.
-genomes_miRBase = ["hsa", "ssc", "cgr"]
-genome_filt = ["human", "pig", "chinese_hamster"]
-genome_filt = [i for i, item in enumerate(genome_filt) if item in genome_list]
-genome_filt = [genomes_miRBase[id_var] for id_var in genome_filt] 
-
-for genome_miRBase_var in genome_filt:
-    mature_file = genome_folder + genome_miRBase_var + "_mature.fa"
-    hairpin_file = genome_folder + genome_miRBase_var + "_hairpin.fa"
-    
-    if os.path.isfile(mature_file) == False:
-        file1 = open(mature_file, "wb")
-        
-        cmd_list = ["grep --no-group-separator -A1 " + ("\"^>" + genome_miRBase_var + "-\"") + " ./Required_files/miRBase/mature.fa"]
-        process = subprocess.run(cmd_list, shell=True, capture_output=True)
-        
-        file1.write(process.stdout)
-        file1.close()
-        
-    if os.path.isfile(hairpin_file) == False:
-        file1 = open(hairpin_file, "wb")
-        
-        cmd_list = ["grep --no-group-separator -A1 " + ("\"^>" + genome_miRBase_var + "-\"") + " ./Required_files/miRBase/hairpin.fa"]
-        process = subprocess.run(cmd_list, shell=True, capture_output=True)
-        
-        file1.write(process.stdout)
-        file1.close()
-
-            
 # Rule to specify final output files
 rule all:
     input:
@@ -199,10 +49,49 @@ rule all:
         read_loss_plots = expand("Final_outputs/{genome_folder}/Read_loss_plots.pdf", genome_folder = genome_list)
 
 
+# Download or install Bowtie databases required for pipeline.
+rule bowtie_databases:
+    output:
+        "Required_files/{genome_folder}/{bowtie_name}.1.ebwt",
+        "Required_files/{genome_folder}/{bowtie_name}.2.ebwt",
+        "Required_files/{genome_folder}/{bowtie_name}.3.ebwt",
+        "Required_files/{genome_folder}/{bowtie_name}.4.ebwt",
+        "Required_files/{genome_folder}/{bowtie_name}.rev.1.ebwt",
+        "Required_files/{genome_folder}/{bowtie_name}.rev.2.ebwt"
+    script:
+        "Scripts/Bowtie_databases.py"
+
+
+# Download miRBase databases
+rule miRBase_download:
+    output:
+        mature_miR = "Required_files/miRBase/mature.fa",
+        hairpin_miR = "Required_files/miRBase/hairpin.fa"
+    script:
+        "Scripts/miRBase_download.py"
+
+
+# Install miRBase databases required for pipeline.
+rule miRBase_databases:
+    input:
+        "Required_files/miRBase/mature.fa",
+        "Required_files/miRBase/hairpin.fa"
+    output:
+        "Required_files/miRBase/{miRBase_name}_mature.fa",
+        "Required_files/miRBase/{miRBase_name}_hairpin.fa"
+    script:
+        "Scripts/miRBase_databases.py"
+
+
 # Remove adaptors using cutadapt
 rule remove_adaptors:
     input:
-        lambda wildcards: "Data/" + sample_sheet.loc[wildcards.sample, "File_name"]
+        bowtie_db = expand(["Required_files/{genome_folder}/{bowtie_name}.1.ebwt", "Required_files/{genome_folder}/{bowtie_name}.2.ebwt",
+                        "Required_files/{genome_folder}/{bowtie_name}.3.ebwt", "Required_files/{genome_folder}/{bowtie_name}.4.ebwt",
+                        "Required_files/{genome_folder}/{bowtie_name}.rev.1.ebwt", "Required_files/{genome_folder}/{bowtie_name}.rev.2.ebwt"],
+                        zip, genome_folder = genome_list, bowtie_name = bowtie_names),
+        miRBase_db = expand(["Required_files/miRBase/{miRBase_name}_mature.fa", "Required_files/miRBase/{miRBase_name}_hairpin.fa"], miRBase_name = miRBase_names),
+        input_fastq = lambda wildcards: "Data/" + sample_sheet.loc[wildcards.sample, "File_name"]
     output:
         "Adaptor_removed/{sample}_cleaned.fastq"
     log:
@@ -212,9 +101,9 @@ rule remove_adaptors:
         library_type = lambda wildcards: sample_sheet.loc[wildcards.sample, "Library_type"]
     run:
         if params.library_type == "truseq":
-            shell("cutadapt -a TGGAATTCTCGGGTGCCAAGG -o {output} --minimum-length 14 {input} > {log.out} 2> {log.err}")
+            shell("cutadapt -a TGGAATTCTCGGGTGCCAAGG -o {output} --minimum-length 14 {input.input_fastq} > {log.out} 2> {log.err}")
         if params.library_type == "nextflex":
-            shell("cutadapt -a TGGAATTCTCGGGTGCCAAGG -o {output} --minimum-length 22 {input} > {log.out} 2> {log.err}")
+            shell("cutadapt -a TGGAATTCTCGGGTGCCAAGG -o {output} --minimum-length 22 {input.input_fastq} > {log.out} 2> {log.err}")
 
 
 # Trim reads based on library preperation kit.
@@ -266,11 +155,11 @@ rule miRDeep2_map:
         err = "miRDeep2_output/{genome_type}/Log_mapped/{sample}.stderr"
     run:
         if wildcards.genome_type == "human":
-            shell("cd miRDeep2_output/{wildcards.genome_type} && mapper.pl ../../{input} -e -h -l 16 -m -p '../../Required_files/GRCh38/GCA_000001405.15_GRCh38_no_alt_analysis_set' -q -s ../../{output.collapsed_fa} -t ../../{output.alligned_arf} > ../../{log.out} 2> ../../{log.err}")
+            shell("cd miRDeep2_output/{wildcards.genome_type} && mapper.pl ../../{input} -e -h -l 16 -m -p '../../Required_files/{wildcards.genome_type}/GCA_000001405.15_GRCh38_no_alt_analysis_set' -q -s ../../{output.collapsed_fa} -t ../../{output.alligned_arf} > ../../{log.out} 2> ../../{log.err}")
         if wildcards.genome_type == "chinese_hamster":
-            shell("cd miRDeep2_output/{wildcards.genome_type} && mapper.pl ../../{input} -e -h -l 16 -m -p '../../Required_files/chok1gshd/chok1gshd' -q -s ../../{output.collapsed_fa} -t ../../{output.alligned_arf} > ../../{log.out} 2> ../../{log.err}")
+            shell("cd miRDeep2_output/{wildcards.genome_type} && mapper.pl ../../{input} -e -h -l 16 -m -p '../../Required_files/{wildcards.genome_type}/chok1gshd' -q -s ../../{output.collapsed_fa} -t ../../{output.alligned_arf} > ../../{log.out} 2> ../../{log.err}")
         if wildcards.genome_type == "pig":
-            shell("cd miRDeep2_output/{wildcards.genome_type} && mapper.pl ../../{input} -e -h -l 16 -m -p '../../Required_files/Sscrofa11_1/genome' -q -s ../../{output.collapsed_fa} -t ../../{output.alligned_arf} > ../../{log.out} 2> ../../{log.err}")
+            shell("cd miRDeep2_output/{wildcards.genome_type} && mapper.pl ../../{input} -e -h -l 16 -m -p '../../Required_files/{wildcards.genome_type}/genome' -q -s ../../{output.collapsed_fa} -t ../../{output.alligned_arf} > ../../{log.out} 2> ../../{log.err}")
 
 
 # Quantify reads mapped by miRDeep2 
