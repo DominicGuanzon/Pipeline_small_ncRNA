@@ -1,7 +1,8 @@
 # Pipeline_small_ncRNA
 
 This is a pipeline to analyse small RNA sequencing data using Unitas and miRDeep2.
-Only single end read supported at the moment.
+Only single end read supported.
+Only human, chinese_hamster or pig genomes are supported. The pipeline will attempt to download and generate all necesary files.
 
 ## Description
 
@@ -69,31 +70,15 @@ cd ..
 
 ### Executing program
 
-Download required files
-```
-mkdir -p Pipeline_small_ncRNA/Pipeline/Required_files/hg38 && cd $_
-wget ftp://ftp.ccb.jhu.edu/pub/data/bowtie_indexes/GRCh38_no_alt.zip
-    * Bowtie human hg38 index
-for z in *.zip; do unzip "$z"; done
-cd ../../../..
-    
-mkdir -p Pipeline_small_ncRNA/Pipeline/Required_files/hg38_miRBase && cd $_
-wget https://www.mirbase.org/ftp/CURRENT/mature.fa.zip --no-check-certificate
-wget https://www.mirbase.org/ftp/CURRENT/hairpin.fa.zip --no-check-certificate
-for z in *.zip; do unzip "$z"; done
-grep --no-group-separator -A1 "^>hsa-" mature.fa > mature_hsa.fa
-grep --no-group-separator -A1 "^>hsa-" hairpin.fa > hairpin_hsa.fa
-    * Extract only human miRNA's
-```
-
-Add data and modify Sample file
+Add data and modify Sample_file.tsv
 ```
 Move FASTQ data files to Pipeline_small_ncRNA/Pipeline/Data
 
 Open Pipeline_small_ncRNA/Config/Sample_file.tsv and modify
     * Include FASTQ file names to be analysed in the "File_name" column.
-    * Include sample names corresponding to the FASTQ files. All subsequent files generated will use the sample name.
+    * Include sample names corresponding to the FASTQ files in "Sample_name" column. All subsequent files generated will use the sample name.
     * Include either "truseq" or "nextflex" libraries in the "Library_type" column.
+	* Include either "human", "chinese_hamster" or "pig" in "Genome" column.
 ```
 
 Run pipeline.
@@ -165,6 +150,23 @@ Add path to .bashrc "export PERL5LIB=PERL5LIB:/home/uqdguanz/perl5/perlbrew/perl
 
 cd mirdeep2-0.1.3
 touch install_successful
+```
+
+Download required files. Note: This is automatically done by the pipeline now.
+```
+mkdir -p Pipeline_small_ncRNA/Pipeline/Required_files/hg38 && cd $_
+wget ftp://ftp.ccb.jhu.edu/pub/data/bowtie_indexes/GRCh38_no_alt.zip
+    * Bowtie human hg38 index
+for z in *.zip; do unzip "$z"; done
+cd ../../../..
+    
+mkdir -p Pipeline_small_ncRNA/Pipeline/Required_files/hg38_miRBase && cd $_
+wget https://www.mirbase.org/ftp/CURRENT/mature.fa.zip --no-check-certificate
+wget https://www.mirbase.org/ftp/CURRENT/hairpin.fa.zip --no-check-certificate
+for z in *.zip; do unzip "$z"; done
+grep --no-group-separator -A1 "^>hsa-" mature.fa > mature_hsa.fa
+grep --no-group-separator -A1 "^>hsa-" hairpin.fa > hairpin_hsa.fa
+    * Extract only human miRNA's
 ```
 
 ## Authors
