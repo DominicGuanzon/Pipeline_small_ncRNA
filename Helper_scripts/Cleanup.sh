@@ -6,12 +6,12 @@ cd $(dirname $0)
 cd ../Pipeline/
 
 rm -r Final_outputs/
-rm -r Unitas_annotated_reads/
 rm -r miRDeep2_output/
 rm -r Trimmed_reads/
 rm -r Adaptor_removed/
 rm -r Data/
 rm -r .snakemake/
-rm -r mapper_logs/
+find Unitas_annotated_reads/ -type d -name "*.fastq_*" -exec rm -r "{}" \;
+find Unitas_annotated_reads/ -type d -name "Log" -exec rm -r "{}" \;
 
 mkdir Data
