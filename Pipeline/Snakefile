@@ -202,7 +202,8 @@ rule combine_unitas_output:
         "Final_outputs/{genome_folder}/Unitas_hits_per_target_combined.csv",
         "Final_outputs/{genome_folder}/Unitas_tRF_table_simplified_combined.csv",
         "Final_outputs/{genome_folder}/Unitas_tRF_table_absolute_combined.csv",
-        "Final_outputs/{genome_folder}/Unitas_tRF_table_fractionated_combined.csv"
+        "Final_outputs/{genome_folder}/Unitas_tRF_table_fractionated_combined.csv",
+        "Final_outputs/{genome_folder}/miR-table_simplified_combined.csv"
     params:
         input_dir = "Unitas_annotated_reads/{genome_folder}/"
     script:

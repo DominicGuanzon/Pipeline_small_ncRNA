@@ -13,5 +13,6 @@ rm -r Data/
 rm -r .snakemake/
 find Unitas_annotated_reads/ -type d -name "*.fastq_*" -exec rm -r "{}" \;
 find Unitas_annotated_reads/ -type d -name "Log" -exec rm -r "{}" \;
+find Unitas_annotated_reads/ -type f -name "*.unitas_pid" -exec rm "{}" \;
 
 mkdir Data

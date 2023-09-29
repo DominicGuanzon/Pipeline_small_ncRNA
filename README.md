@@ -84,7 +84,7 @@ Open Pipeline_small_ncRNA/Config/Sample_file.tsv and modify
 Run pipeline.
 ```
 cd Pipeline_small_ncRNA/Pipeline/
-source activate Pipeline_small_ncRNA
+conda activate Pipeline_small_ncRNA
 snakemake --cores 4 --set-threads annotate_read=4
     * Threads are the number of input files analysed in parrallel by Unitas.
 ```
