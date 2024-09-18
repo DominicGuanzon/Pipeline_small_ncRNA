@@ -102,8 +102,10 @@ rule remove_adaptors:
     run:
         if params.library_type == "truseq":
             shell("cutadapt -a TGGAATTCTCGGGTGCCAAGG -o {output} --minimum-length 14 {input.input_fastq} > {log.out} 2> {log.err}")
-        if params.library_type == "nextflex":
+        if params.library_type == "nextflex_v3":
             shell("cutadapt -a TGGAATTCTCGGGTGCCAAGG -o {output} --minimum-length 22 {input.input_fastq} > {log.out} 2> {log.err}")
+        if params.library_type == "nextflex_v4":
+            shell("cutadapt -a TGGAATTCTCGGGTGCCAAGG -o {output} --minimum-length 14 {input.input_fastq} > {log.out} 2> {log.err}")
 
 
 # Trim reads based on library preperation kit.
@@ -120,8 +122,10 @@ rule trim_read:
     run:
         if params.library_type == "truseq":
             shell("cp {input} {output} > {log.out} 2> {log.err}")
-        if params.library_type == "nextflex":
+        if params.library_type == "nextflex_v3":
             shell("cutadapt -u 4 -u -4 -o {output} {input} > {log.out} 2> {log.err}")
+        if params.library_type == "nextflex_v4":
+            shell("cp {input} {output} > {log.out} 2> {log.err}")
 
 
 # Annotate reads using unitas.
