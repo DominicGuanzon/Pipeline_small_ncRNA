@@ -7,25 +7,25 @@ calculate_number_of_reads <- function(file_list, sample_file_input) {
     Raw_reads_counts = data.frame(Counts = sapply(file_list, function(x) length(count.fields(x, blank.lines.skip = FALSE))))
     Raw_reads_counts$Counts = Raw_reads_counts$Counts / 4
     
-    # Look for sample name in file name using sample sheet
-	Sample_names_var = paste0("^", sample_file_input$Sample_name, "_")
-	
-	Sample_names_var_position = c()
-	for (sample_var_id in Sample_names_var) {
-		Sample_names_var_position = c(Sample_names_var_position, grep(sample_var_id, basename(rownames(Raw_reads_counts))))
-	}
-	
-	# If no matches, use the file name in sample sheet and determine sample name
-	if (length(Sample_names_var_position) == 0) {
-		Sample_names_var = paste0("^", sample_file_input$File_name, "$")
-		
-		Sample_names_var_position = c()
-		for (sample_var_id in Sample_names_var) {
-			Sample_names_var_position = c(Sample_names_var_position, grep(sample_var_id, basename(rownames(Raw_reads_counts))))
-		}
-	}
-	
-	Raw_reads_counts$Sample_names = sample_file_input[order(Sample_names_var_position), "Sample_name"]
+    # Use the sample name in the sample sheet to identify the file name
+    Sample_names_var = paste0("^", sample_file_input$Sample_name, "_")
+    
+    Sample_names_var_position = c()
+    for (sample_var_id in Sample_names_var) {
+        Sample_names_var_position = c(Sample_names_var_position, grep(sample_var_id, basename(rownames(Raw_reads_counts))))
+    }
+    
+    # If position length not equal to sample sheet, use the file name in sample sheet to identify the file name
+    if (length(Sample_names_var_position) != nrow(Raw_reads_counts)) {
+        Sample_names_var = paste0("^", sample_file_input$File_name, "$")
+        
+        Sample_names_var_position = c()
+        for (sample_var_id in Sample_names_var) {
+            Sample_names_var_position = c(Sample_names_var_position, grep(sample_var_id, basename(rownames(Raw_reads_counts))))
+        }
+    }
+    
+    Raw_reads_counts$Sample_names = sample_file_input[order(Sample_names_var_position), "Sample_name"]
     rownames(Raw_reads_counts) = Raw_reads_counts$Sample_names
     
     return(Raw_reads_counts)
@@ -35,23 +35,23 @@ calculate_number_of_reads <- function(file_list, sample_file_input) {
 parse_and_plot_read_loss <- function(data_path_raw, genome_folder, adaptor_files, trimmed_files, out_path) {
 
     Sample_file = read.csv("../Config/Sample_file.tsv", sep = "\t")
-	
-	# Subset Sample_file for genomes of interest
+
+    # Subset Sample_file for genomes of interest
     Sample_file = Sample_file[Sample_file["Genome"] == genome_folder, ]
     
     # List raw files and calculate number of reads
-	Raw_reads = list.files(data_path_raw, pattern = ".fastq$", full.names = TRUE)
-	Raw_reads = Raw_reads[grep(paste0(Sample_file$File_name, "$", collapse = "|"), Raw_reads)]
+    Raw_reads = list.files(data_path_raw, pattern = ".fastq$", full.names = TRUE)
+    Raw_reads = Raw_reads[grep(paste0(Sample_file$File_name, "$", collapse = "|"), Raw_reads)]
     Raw_reads_count = calculate_number_of_reads(Raw_reads, Sample_file)
     names(Raw_reads_count)[names(Raw_reads_count) == "Counts"] <- "Raw_counts"
     
     # List adaptor processed files and calculate number of reads
-	Reads_adaptor = adaptor_files[grep(paste0(Sample_file$Sample_name, "_", collapse = "|"), adaptor_files)]
+    Reads_adaptor = adaptor_files[grep(paste0(Sample_file$Sample_name, "_", collapse = "|"), adaptor_files)]
     Reads_adaptor_count = calculate_number_of_reads(Reads_adaptor, Sample_file)
     names(Reads_adaptor_count)[names(Reads_adaptor_count) == "Counts"] <- "Adaptor_removal_counts"
     
     # List adaptor trimmed processed files and calculate number of reads
-	Reads_trimmed = trimmed_files[grep(paste0(Sample_file$Sample_name, "_", collapse = "|"), trimmed_files)]
+    Reads_trimmed = trimmed_files[grep(paste0(Sample_file$Sample_name, "_", collapse = "|"), trimmed_files)]
     Reads_trimmed_count = calculate_number_of_reads(Reads_trimmed, Sample_file)
     names(Reads_trimmed_count)[names(Reads_trimmed_count) == "Counts"] <- "Trimmed_removal_counts"
     
